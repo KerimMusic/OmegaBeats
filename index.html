@@ -10,10 +10,7 @@
 
     <div class="app-container">
 
-        <!-- BARRA SUPERIOR: MENÚ | LOGO | CORAZÓN + COMPARTIR -->
         <header class="top-bar">
-
-            <!-- BOTÓN DE MENÚ (ABRE EL SUBMENÚ FIJO) -->
             <button class="menu-btn" id="menu-btn" aria-label="Abrir menú">
                 <svg viewBox="0 0 24 24" width="28" height="28">
                     <line x1="3" y1="6"  x2="21" y2="6"  stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
@@ -22,23 +19,18 @@
                 </svg>
             </button>
 
-            <!-- LOGOTIPO OMEGA BEATS (CENTRADO) -->
             <div class="header-logo">
                 <img src="https://www.dropbox.com/scl/fi/6e7qxx06cip1720viw4zt/Omega.png?rlkey=pujvgx4l2w9cl3c2wiyk0tbgf&amp;st=niezkaoj&amp;raw=1"
-                     alt="Omega Beats"
-                     loading="lazy">
+                     alt="Omega Beats" loading="lazy">
             </div>
 
-            <!-- ACCIONES: CORAZÓN (BUSCAR) Y COMPARTIR -->
             <div class="header-actions">
-                <!-- BOTÓN DE CORAZÓN (BUSCAR) -->
                 <button class="heart-search-btn" id="heart-search-btn" aria-label="Buscar Beat">
                     <svg viewBox="0 0 24 24" width="32" height="32" fill="#ff2a2a">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                     </svg>
                 </button>
 
-                <!-- BOTÓN DE COMPARTIR -->
                 <button class="share-btn" id="share-btn" aria-label="Compartir">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="18" cy="5"  r="3" fill="#ffffff" stroke="none"/>
@@ -51,7 +43,6 @@
             </div>
         </header>
 
-        <!-- SUBMENÚ FIJO (PANEL LATERAL) -->
         <div class="submenu-overlay" id="submenu-overlay"></div>
         <nav class="submenu" id="submenu" aria-hidden="true">
             <div class="submenu-header">
@@ -65,15 +56,12 @@
             </ul>
         </nav>
 
-        <!-- BARRA DE BÚSQUEDA (OCULTA POR DEFECTO) -->
         <div class="search-container" id="search-container">
             <input type="text" class="search-input" id="search-input" placeholder="Buscar beat por título...">
         </div>
 
-        <!-- Lista de reproducción -->
         <div class="playlist" id="playlist">
 
-            <!-- PISTA 1 -->
             <div class="playlist-item"
                  data-src="https://www.dropbox.com/scl/fi/plzx3y8r6o3yek9t7va96/Beats-Wav-150-BPM-Bb.wav?rlkey=9aooxmnkx20iefpkki0svp2eu&amp;st=mjwyd8l1&amp;raw=1">
                 <div class="thumbnail">
@@ -87,7 +75,6 @@
                 <button class="buy-button">COMPRAR</button>
             </div>
 
-            <!-- PISTA 2 -->
             <div class="playlist-item"
                  data-src="https://www.dropbox.com/scl/fi/qjnzap6t8hvqob79sqxh8/Muertos-Sin-Miedo-Trap-Instrumental.wav?rlkey=3c2ztpt3d3gxx9tojvo2uaiml&st=9uc6hzr5&raw=1">
                 <div class="thumbnail">
@@ -101,7 +88,6 @@
                 <button class="buy-button">COMPRAR</button>
             </div>
 
-            <!-- PISTA 3 -->
             <div class="playlist-item"
                  data-src="https://www.dropbox.com/scl/fi/k7wcf8wvascsy0eyjr1oq/Cielo-urbano-al-anochecer.wav?rlkey=vbi4jqtyvxyeloorsxkficx7q&st=4q1u7sew&raw=1">
                 <div class="thumbnail">
@@ -115,7 +101,6 @@
                 <button class="buy-button">COMPRAR</button>
             </div>
 
-            <!-- PISTA 3 -->
             <div class="playlist-item"
                  data-src="https://www.dropbox.com/scl/fi/8s5tthk3mffq2nsatdxp3/Beats-Reggeton-wav.wav?rlkey=vwqolcryz3vuj6oj88tz0hxjr&st=s6trmnw1&raw=1">
                 <div class="thumbnail">
@@ -131,7 +116,6 @@
 
         </div>
 
-        <!-- Reproductor de audio (Parte inferior) -->
         <div class="player" id="player">
 
             <div class="player-thumbnail" id="player-thumbnail">
@@ -157,7 +141,6 @@
             </button>
         </div>
 
-        <!-- VENTANA MODAL DE COMPRA -->
         <div class="purchase-modal-overlay" id="purchase-modal">
             <div class="modal-content">
                 <button class="close-modal" id="close-modal" aria-label="Cerrar">&times;</button>
