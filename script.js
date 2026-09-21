@@ -191,8 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loadItem(randomItem, true);
     }
 
-    /* ---------- Init ---------- */
-
     shufflePlaylist();
 
     /* ---------- Play ---------- */
@@ -449,6 +447,417 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeSubmenu();
+    });
+
+    /* ============================================================
+       REPRODUCTOR A PANTALLA COMPLETA (VINILO + SWIPE VERTICAL)
+       ============================================================ */
+
+    if (!player || !audioPlayer || !playlist || !playerCover || !playerTitle || !playButton) return;
+
+    /* ---------- 1. INYECTAR HTML ---------- */
+    const fsHTML = `
+        <div class="fs-player" id="fs-player" aria-hidden="true">
+            <div class="fs-bg" id="fs-bg"></div>
+
+            <div class="fs-top-bar">
+                <button class="fs-close" id="fs-close" aria-label="Cerrar">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+                         stroke="#ffffff" stroke-width="2.4" stroke-linecap="round">
+                        <line x1="6" y1="6"  x2="18" y2="18"/>
+                        <line x1="18" y1="6" x2="6"  y2="18"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="fs-content" id="fs-content">
+                <div class="fs-vinyl-wrap" id="fs-vinyl-wrap">
+                    <div class="fs-vinyl" id="fs-vinyl">
+                        <img class="fs-cover" id="fs-cover" alt="Portada">
+                    </div>
+                    <span class="fs-spindle"></span>
+                </div>
+
+                <h2 class="fs-title" id="fs-title">Título del Beat</h2>
+
+                <button class="fs-buy" id="fs-buy">COMPRAR</button>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', fsHTML);
+
+    /* ---------- 2. INYECTAR CSS ---------- */
+    const styleEl = document.createElement('style');
+    styleEl.id = 'fs-player-styles';
+    styleEl.textContent = `
+    .fs-player {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: #050505;
+        z-index: 900;
+        display: flex;
+        flex-direction: column;
+        transform: translateY(100%);
+        transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        overflow: hidden;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .fs-player.visible { transform: translateY(0); }
+    .fs-player:not(.visible) { pointer-events: none; }
+
+    .fs-bg {
+        position: absolute;
+        inset: -10%;
+        background-size: cover;
+        background-position: center;
+        filter: blur(60px) brightness(0.35) saturate(1.15);
+        transform: scale(1.2);
+        z-index: 0;
+        pointer-events: none;
+        transition: background-image 0.4s ease;
+    }
+
+    .fs-top-bar {
+        position: relative;
+        z-index: 3;
+        display: flex;
+        justify-content: flex-end;
+        padding: 18px 18px 0;
+        flex-shrink: 0;
+    }
+
+    .fs-close {
+        background: rgba(255,255,255,0.08);
+        border: none;
+        border-radius: 50%;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.15s ease;
+    }
+    .fs-close:active {
+        transform: scale(0.9);
+        background: rgba(255,255,255,0.18);
+    }
+
+    .fs-content {
+        position: relative;
+        z-index: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 34px;
+        padding: 0 30px 50px;
+        transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease;
+        min-height: 0;
+    }
+
+    .fs-vinyl-wrap {
+        position: relative;
+        width: min(72vw, 62vh, 380px);
+        aspect-ratio: 1 / 1;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .fs-vinyl {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #0a0a0a;
+        box-shadow:
+            0 0 0 12px #0b0b0b,
+            0 0 0 14px #1c1c1c,
+            0 0 0 15px #060606,
+            0 25px 60px rgba(0,0,0,0.85),
+            0 0 90px rgba(255,42,42,0.10);
+        animation: fs-spin 14s linear infinite;
+        animation-play-state: paused;
+        position: relative;
+        will-change: transform;
+    }
+    .fs-vinyl.playing { animation-play-state: running; }
+
+    .fs-cover {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .fs-spindle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #3a3a3a 0%, #111 45%, #000 100%);
+        transform: translate(-50%, -50%);
+        box-shadow:
+            inset 0 2px 4px rgba(255,255,255,0.20),
+            0 0 0 3px rgba(0,0,0,0.60);
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    @keyframes fs-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+
+    .fs-title {
+        font-size: clamp(20px, 5.4vw, 28px);
+        font-weight: 800;
+        line-height: 1.25;
+        text-align: center;
+        color: #ffffff;
+        max-width: 100%;
+        word-break: break-word;
+        text-shadow: 0 2px 12px rgba(0,0,0,0.65);
+        padding: 0 8px;
+    }
+
+    .fs-buy {
+        background: #ff2a2a;
+        color: #ffffff;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 70px;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(255,42,42,0.42);
+        transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+        flex-shrink: 0;
+    }
+    .fs-buy:active { transform: scale(0.95); }
+
+    @media (max-height: 640px) {
+        .fs-content { gap: 20px; padding-bottom: 26px; }
+        .fs-buy { padding: 12px 55px; font-size: 15px; }
+    }
+    `;
+    document.head.appendChild(styleEl);
+
+    /* ---------- 3. REFERENCIAS ---------- */
+    const fsPlayer    = document.getElementById('fs-player');
+    const fsBg        = document.getElementById('fs-bg');
+    const fsContent   = document.getElementById('fs-content');
+    const fsVinyl     = document.getElementById('fs-vinyl');
+    const fsCover     = document.getElementById('fs-cover');
+    const fsTitle     = document.getElementById('fs-title');
+    const fsBuy       = document.getElementById('fs-buy');
+    const fsClose     = document.getElementById('fs-close');
+
+    /* ---------- 4. SINCRONIZACIÓN ---------- */
+    let lastCoverSrc = '';
+
+    function syncFromMini() {
+        const newCover = playerCover.getAttribute('src') || '';
+        const newTitle = (playerTitle.textContent || '').trim() || 'Título del Beat';
+
+        if (newCover && newCover !== lastCoverSrc) {
+            fsCover.src = newCover;
+            fsBg.style.backgroundImage = `url("${newCover}")`;
+            lastCoverSrc = newCover;
+        } else if (!newCover) {
+            fsCover.removeAttribute('src');
+            fsBg.style.backgroundImage = '';
+            lastCoverSrc = '';
+        }
+
+        fsTitle.textContent = newTitle;
+    }
+
+    const syncObserver = new MutationObserver(() => syncFromMini());
+    syncObserver.observe(playerCover, { attributes: true, attributeFilter: ['src'] });
+    syncObserver.observe(playerTitle, { childList: true, characterData: true, subtree: true });
+
+    function updateVinylState() {
+        if (audioPlayer.paused) fsVinyl.classList.remove('playing');
+        else                    fsVinyl.classList.add('playing');
+    }
+    audioPlayer.addEventListener('play',  updateVinylState);
+    audioPlayer.addEventListener('pause', updateVinylState);
+    audioPlayer.addEventListener('ended', updateVinylState);
+
+    /* ---------- 5. ABRIR / CERRAR ---------- */
+    function openFullscreen() {
+        if (!playlist.querySelector('.playlist-item.active')) {
+            playButton.click();
+        }
+        syncFromMini();
+        setTimeout(syncFromMini, 120);
+        setTimeout(syncFromMini, 400);
+
+        fsPlayer.classList.add('visible');
+        fsPlayer.setAttribute('aria-hidden', 'false');
+        updateVinylState();
+    }
+
+    function closeFullscreen() {
+        fsPlayer.classList.remove('visible');
+        fsPlayer.setAttribute('aria-hidden', 'true');
+    }
+
+    fsClose.addEventListener('click', closeFullscreen);
+
+    /* ---------- 6. GESTOS ROBUSTOS (document-level tracking) ---------- */
+    function attachGesture(el, onGesture) {
+        el.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            if (e.target.closest('button')) return;
+
+            const sx = e.clientX, sy = e.clientY, st = Date.now();
+            const target = e.target;
+            const pid = e.pointerId;
+
+            function onUp(e2) {
+                if (e2.pointerId !== pid) return;
+                document.removeEventListener('pointerup', onUp);
+                document.removeEventListener('pointercancel', onCancel);
+                onGesture({
+                    dx: e2.clientX - sx,
+                    dy: e2.clientY - sy,
+                    dt: Date.now() - st,
+                    target
+                });
+            }
+            function onCancel(e2) {
+                if (e2.pointerId !== pid) return;
+                document.removeEventListener('pointerup', onUp);
+                document.removeEventListener('pointercancel', onCancel);
+            }
+
+            document.addEventListener('pointerup', onUp);
+            document.addEventListener('pointercancel', onCancel);
+        });
+    }
+
+    /* --- Mini reproductor:
+       Tap → abrir pantalla completa
+       Swipe ↑ → abrir pantalla completa
+    */
+    attachGesture(player, ({ dx, dy, dt, target }) => {
+        const absX = Math.abs(dx), absY = Math.abs(dy);
+        const onProgress = target && target.closest && target.closest('#progress-bar');
+
+        if (!onProgress && dt < 400 && absX < 12 && absY < 12) {
+            openFullscreen();
+            return;
+        }
+
+        if (dt > 800) return;
+        if (absY > 40 && absY > absX * 1.2 && dy < 0) {
+            openFullscreen();
+        }
+    });
+
+    /* --- Pantalla completa:
+       Tap sobre el vinilo → play / pause
+       Swipe vertical → siguiente / anterior beat
+    */
+    attachGesture(fsPlayer, ({ dx, dy, dt, target }) => {
+        const absX = Math.abs(dx), absY = Math.abs(dy);
+        const onVinyl = target && target.closest && target.closest('.fs-vinyl-wrap');
+
+        if (onVinyl && dt < 400 && absX < 12 && absY < 12) {
+            playButton.click();
+            return;
+        }
+
+        if (dt > 1200) return;
+        if (absY > 50 && absY > absX * 1.3) {
+            if (dy < 0) goNext();
+            else        goPrev();
+        }
+    });
+
+    /* ---------- 7. NAVEGACIÓN TIPO TIKTOK ---------- */
+    function getItems() {
+        return Array.from(playlist.querySelectorAll('.playlist-item'));
+    }
+
+    function getActiveIndex() {
+        const items  = getItems();
+        const active = playlist.querySelector('.playlist-item.active');
+        return items.indexOf(active);
+    }
+
+    function animateSlide(direction) {
+        fsContent.style.transition = 'none';
+        fsContent.style.transform  = direction === 'up' ? 'translateY(30px)' : 'translateY(-30px)';
+        fsContent.style.opacity    = '0';
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                fsContent.style.transition = 'transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease';
+                fsContent.style.transform  = 'translateY(0)';
+                fsContent.style.opacity    = '1';
+            });
+        });
+    }
+
+    function resetVinylSpin() {
+        fsVinyl.style.animation = 'none';
+        void fsVinyl.offsetHeight;
+        fsVinyl.style.animation = '';
+        updateVinylState();
+    }
+
+    function goNext() {
+        const items = getItems();
+        if (!items.length) return;
+        let idx = getActiveIndex();
+        if (idx === -1) idx = 0;
+        const nextIdx = (idx + 1) % items.length;
+
+        animateSlide('up');
+        items[nextIdx].click();
+        setTimeout(resetVinylSpin, 60);
+    }
+
+    function goPrev() {
+        const items = getItems();
+        if (!items.length) return;
+        let idx = getActiveIndex();
+        if (idx === -1) idx = 0;
+        const prevIdx = (idx - 1 + items.length) % items.length;
+
+        animateSlide('down');
+        items[prevIdx].click();
+        setTimeout(resetVinylSpin, 60);
+    }
+
+    /* ---------- 8. BOTÓN COMPRAR ---------- */
+    fsBuy.addEventListener('click', () => {
+        const active = playlist.querySelector('.playlist-item.active');
+        if (!active) return;
+        const buyBtn = active.querySelector('.buy-button');
+        if (buyBtn) buyBtn.click();
+    });
+
+    /* ---------- 9. TECLA ESC ---------- */
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && fsPlayer.classList.contains('visible')) {
+            closeFullscreen();
+        }
     });
 
 });
