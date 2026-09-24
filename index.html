@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Reproductor de Música UI</title>
+    <title>Reproductor de Música Kerim Music</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,8 +20,8 @@
             </button>
 
             <div class="header-logo">
-                <img src="https://www.dropbox.com/scl/fi/6e7qxx06cip1720viw4zt/Omega.png?rlkey=pujvgx4l2w9cl3c2wiyk0tbgf&amp;st=niezkaoj&amp;raw=1"
-                     alt="Omega Beats" loading="lazy">
+                <img src="https://cdn.pixabay.com/animation/2023/02/21/12/15/12-15-04-910_512.gif"
+                     alt="kerimmusic" loading="lazy">
             </div>
 
             <div class="header-actions">
@@ -50,69 +50,661 @@
                 <button class="close-submenu" id="close-submenu" aria-label="Cerrar menú">&times;</button>
             </div>
             <ul class="submenu-list">
-                <li><a href="https://kerimmusic.github.io/informacionOmegaBeats/" class="submenu-link">Informacion</a></li>
-                <li><a href="https://kerimmusic.github.io/Kerim-Music/" class="submenu-link">Musica Kerim Music</a></li>
+                <li><a href="https://kerimmusic.github.io/OmegaBeats/" class="submenu-link">OmegaBeats</a></li>
                 <li><a href="https://kerimmusic.github.io/GrupoOmegaBeats/" class="submenu-link">Grupo y Comunidad</a></li>
                 <li><a href="https://kerimmusic.github.io/DescargarAppOmegaBeats/" class="submenu-link">Compartir App</a></li>
             </ul>
         </nav>
 
         <div class="search-container" id="search-container">
-            <input type="text" class="search-input" id="search-input" placeholder="Buscar beat por título...">
+            <input type="text" class="search-input" id="search-input" placeholder="Buscar beat o artista...">
         </div>
 
         <div class="playlist" id="playlist">
 
+            <div class="home-view" id="home-view">
+
+                <section class="home-section" id="sec-artists">
+                    <h2 class="home-section-title">¿Qué artista quieres escuchar?</h2>
+                    <div class="home-carousel" id="carousel-artists"></div>
+                </section>
+
+                <section class="home-section" id="sec-listen-again">
+                    <h2 class="home-section-title">Volver a escuchar</h2>
+                    <div class="home-carousel" id="carousel-listen-again"></div>
+                </section>
+
+                <section class="home-section" id="sec-maybe">
+                    <h2 class="home-section-title">A lo mejor te guste</h2>
+                    <div class="home-carousel" id="carousel-maybe"></div>
+                </section>
+
+                <section class="home-section" id="sec-top">
+                    <h2 class="home-section-title">Lo más escuchado</h2>
+                    <div class="home-carousel" id="carousel-top"></div>
+                </section>
+
+                <section class="home-section" id="sec-albums">
+                    <h2 class="home-section-title">Álbunes de artistas</h2>
+                    <div class="home-carousel" id="carousel-albums"></div>
+                </section>
+
+                <div class="home-all-header">
+                    <h2 class="home-section-title home-section-title--all">Todas las canciones</h2>
+                    <button class="show-all-btn" id="show-all-btn" type="button">
+                        Mostrar todas las canciones
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==================== Barrio Bajo ==================== -->
             <div class="playlist-item"
-                 data-src="https://www.dropbox.com/scl/fi/plzx3y8r6o3yek9t7va96/Beats-Wav-150-BPM-Bb.wav?rlkey=9aooxmnkx20iefpkki0svp2eu&amp;st=mjwyd8l1&amp;raw=1">
+                 data-src="https://www.dropbox.com/scl/fi/1yohh9j4442pchcu7k03w/Master_Se-te-sube-la-Nota-Pri-Ramirez.wav?rlkey=94t60a2ae0hg1rt701l94w8ho&st=kjqj3eez&raw=1">
                 <div class="thumbnail">
-                    <img src="https://www.dropbox.com/scl/fi/dxpsq9dmhgyms68dq5p6d/Beats-Sex.jpg?rlkey=qg2lmvf96f76y7xvtgvnci1dq&amp;st=ab9v4mdi&amp;raw=1"
-                         alt="Portada" loading="lazy">
+                    <img src="https://www.dropbox.com/scl/fi/zi53xkbpy3ltgf1ztzd62/Se-te-sube-la-nota.png?rlkey=530efmntba6x9g07gra0qm8dr&st=0guanbwd&raw=1" alt="Portada" loading="lazy">
                 </div>
                 <div class="item-info">
-                    <span class="item-title">"OBSESION" Trap Instrumental Sensual Pista De Trap Sensual</span>
-                    <span class="item-subtitle"></span>
+                    <span class="item-title">Se te sube la nota Barrio Bajo</span>
+                    <span class="item-subtitle">Barrio Bajo · Rap</span>
                 </div>
-                <button class="buy-button">COMPRAR</button>
             </div>
 
             <div class="playlist-item"
-                 data-src="https://www.dropbox.com/scl/fi/qjnzap6t8hvqob79sqxh8/Muertos-Sin-Miedo-Trap-Instrumental.wav?rlkey=3c2ztpt3d3gxx9tojvo2uaiml&st=9uc6hzr5&raw=1">
+                 data-src="https://www.dropbox.com/scl/fi/qfa9thly2lqyybvxfsrid/Master_Dile-Prii-Ramirez-Ofical.wav?rlkey=lh54mvnmyykc5eb785rx9s0s9&st=66egt3hp&raw=1">
                 <div class="thumbnail">
-                    <img src="https://www.dropbox.com/scl/fi/b23zdbgyuf1fkyugo1uiy/Picsart_26-09-14_21-05-54-571.jpg?rlkey=c7hcf50ih6pgq2cmexa0mfvge&st=ak7wxvum&raw=1"
-                         alt="Portada" loading="lazy">
+                    <img src="https://www.dropbox.com/scl/fi/qker6uqxmojvnvuuzgzob/Dile.jpg?rlkey=76hsqmpzj3r4ctpexesyehok5&st=offbzalp&raw=1" alt="Portada" loading="lazy">
                 </div>
                 <div class="item-info">
-                    <span class="item-title">MUERTO SIN MIEDO – Trap Beat | Dark & Emotional Trap Instrumental 2026</span>
-                    <span class="item-subtitle"></span>
+                    <span class="item-title">Dile Barrio Bajo</span>
+                    <span class="item-subtitle">Barrio Bajo · Rap</span>
                 </div>
-                <button class="buy-button">COMPRAR</button>
+            </div>
+
+            <!-- ==================== Escribo ==================== -->
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/dxhc72dtjjadyzrwupddg/Cosas-de-la-vida-Escribo.wav?rlkey=li3bvmvax97t2f4ion1oiffw8&st=cfc98dg2&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/cc8365qf2ie3rjdlkwp0f/Escribo.jpg?rlkey=je5mgu7vxre0psjxaent3a1zd&st=n7jovfyn&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Cosas de la vida Escribo</span>
+                    <span class="item-subtitle">Escribo</span>
+                </div>
             </div>
 
             <div class="playlist-item"
-                 data-src="https://www.dropbox.com/scl/fi/k7wcf8wvascsy0eyjr1oq/Cielo-urbano-al-anochecer.wav?rlkey=vbi4jqtyvxyeloorsxkficx7q&st=4q1u7sew&raw=1">
+                 data-src="https://www.dropbox.com/scl/fi/xojiflo0c5ydogct9j40v/Escribo.wav?rlkey=wmpwws77lgru2oniwrak9vv8r&st=9qkmtzic&raw=1">
                 <div class="thumbnail">
-                    <img src="https://www.dropbox.com/scl/fi/cxu5ax7kkq1dv1gq53z19/Picsart_26-09-14_21-23-18-314.jpg?rlkey=dcobigf2ljpqpne9inhzblsjd&st=rr02sl4c&raw=1"
-                         alt="Portada" loading="lazy">
+                    <img src="https://www.dropbox.com/scl/fi/cc8365qf2ie3rjdlkwp0f/Escribo.jpg?rlkey=je5mgu7vxre0psjxaent3a1zd&st=n7jovfyn&raw=1" alt="Portada" loading="lazy">
                 </div>
                 <div class="item-info">
-                    <span class="item-title">CIELO URBANO AL ANOCHECER | Piano Acústico Instrumental</span>
-                    <span class="item-subtitle"></span>
+                    <span class="item-title">Escribo Escribo</span>
+                    <span class="item-subtitle">Escribo</span>
                 </div>
-                <button class="buy-button">COMPRAR</button>
             </div>
 
             <div class="playlist-item"
-                 data-src="https://www.dropbox.com/scl/fi/8s5tthk3mffq2nsatdxp3/Beats-Reggeton-wav.wav?rlkey=vwqolcryz3vuj6oj88tz0hxjr&st=s6trmnw1&raw=1">
+                 data-src="https://www.dropbox.com/scl/fi/7ydiw8abe4r4fxfiiz5ij/Pensando-Escribo.wav?rlkey=elx3ydjh5rkfz2qcqekbgc9yp&st=19spg4k2&raw=1">
                 <div class="thumbnail">
-                    <img src="https://www.dropbox.com/scl/fi/xu7vaubbg83d1zqvdg5mq/Picsart_26-09-15_14-44-35-297.jpg?rlkey=k6f5fc4y2k0hsg4shbvx9bgrr&st=fzzhv89k&raw=1"
-                         alt="Portada" loading="lazy">
+                    <img src="https://www.dropbox.com/scl/fi/cc8365qf2ie3rjdlkwp0f/Escribo.jpg?rlkey=je5mgu7vxre0psjxaent3a1zd&st=n7jovfyn&raw=1" alt="Portada" loading="lazy">
                 </div>
                 <div class="item-info">
-                    <span class="item-title">ACÉRCATE — Reggaetón Beat | Latin Urban</span>
-                    <span class="item-subtitle"></span>
+                    <span class="item-title">Pensando Escribo</span>
+                    <span class="item-subtitle">Escribo</span>
                 </div>
-                <button class="buy-button">COMPRAR</button>
+            </div>
+
+            <!-- ==================== Dany Zm ==================== -->
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/g8ojpqgcavyfp2fgwn2wg/Dany_Zm_Tu-eres-mia-Ofical.wav?rlkey=xiowtehy8h6fq38maadjid4bq&st=3hz6dasg&raw=1">
+                <div class="thumbnail">
+                    <img src="https://i.postimg.cc/wMCFZY9H/Picsart-26-02-15-14-39-19-042.jpg" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Dile que tu eres mia Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/lbohzzgaf7xnw1v7o3ec9/ay-estare-2-dany-zm.mp3?rlkey=41qeo3w154ctk8gvlzl2aa0v1&st=ybnb2zya&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Hay estare Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/rq7dnfuqaywgjdo6dp9de/1-Modo-avion-Dany-Zm-El-rencuentro..flac?rlkey=xfv7h1xurdroh0ct3xu71ge9m&st=v1bfhinm&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Modo avion Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/ctedqktecjqbqvd2t5uct/bailado-3-dany-zm.mp3?rlkey=l1zrwqrevorjbxjq3u7gi4k3t&st=3kh4wkgz&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Bailalo Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/v4remtzyol50e00rvhpen/beyby-4dany-zm.mp3?rlkey=y803hhbgxghxrlgsvpe9w16i9&st=p6m3gs7z&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Beyby Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/l4d8dvoahieq4yqf536ol/CORITO-SANO-DANY-ZM-VA-YEZKOR-CRUZ-SAIN-NT-VERSION-T.E.C.mp3?rlkey=wsj8578k3e14hqr74npb3krjb&st=pdov6vmy&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Corito sano Dany Zm ft va ft Yerzkor cruz ft Sain Nt</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/han7yoy13ncejnz4exj3r/dalex-especial-cover-dany-zm.mp3?rlkey=8pchaqdtz2iq854i8zrhxfriw&st=var5yqcp&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Especial Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/ees3i5mgfc50lwtg59hgw/Dany-Zm-Tu-tiempo-se-acavo.mp3?rlkey=kijhvu3rsv6j3zri6dh20wowf&st=3k6i51wu&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Tu tiempo se acabo Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/7qvtyhs6smsgnu56z9ch7/en-gano-6-dany-zm.mp3?rlkey=lzu6kbgqicirph9sp4ndhyq90&st=gu0hpw1p&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Engaño Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/6588ikrqstte1wzjkreja/hasta-cuando-1-dany-zm.mp3?rlkey=uqpq1cpmnj1e5pnd5ndxwpb47&st=tgxuj89m&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Hasta cuando Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/fo85o8m1etbo68m9a46xq/lluvia-8-dany-zm.mp3?rlkey=ywh0y4ezduhd3q7bjvh5orki1&st=n3ykoz9q&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Lluvia Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/ybuowdfnam5frrjksy570/me-dejo-solo-5-dany-zm.mp3?rlkey=9oiwuxep5v6se4r7af6qlwhb2&st=zbzpdjp2&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Me dejo solo Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/xmca1v67r0foa02ah0ix5/nuestro-cuento-7-dany-zm.mp3?rlkey=4wdtldt4ch8usesgbsqdkl0o1&st=4xdrusp8&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Nuestro cuento Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/5dlej4wkll16uxyz3knwf/vuelve-9-dany-zm.mp3?rlkey=1mw4i576qw1q6xn4wofshg3gz&st=tbpp90qm&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/xg2e8wg59t1tos2dhn5ji/img.png?rlkey=zl56z2a68tu96n0nxycrz485f&st=79kjdiww&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Vuelve Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm · Rap</span>
+                    <span class="Album">Construyendo el barco</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/pw73qa4qv84nnxh1t8qez/Te-estra-o-La-S-Y-D.flac?rlkey=8soehefmsezdpm3rjzxvkazbh&st=x0hjaq9k&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/10taifx84l0e4h2y9l2nx/Te-estra-o-tanto.png?rlkey=kp4gp2kp8rhbzsdobyl5tfng6&st=vrnzzymz&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Te extraño tanto Dany Zm</span>
+                    <span class="item-subtitle">Dany Zm ft Sain Nt · Rap</span>
+                </div>
+            </div>
+
+            <!-- ==================== El placoso de la L ==================== -->
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/u81ryisgb72g89ya0md8l/No-Te-Importo-EPDL.wav?rlkey=le8nk4ap3uzoo7uv8yn4yig46&st=ksvr1ckd&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/otojz7yc0de3xqyb9t6yh/783588703_1047085541468353_6915517615099943137_n.jpg?rlkey=paxdkveuyztjmzbusfupn7sge&st=xx7xwgzw&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">No Te Importo EPDL</span>
+                    <span class="item-subtitle">El placoso de la L · Rap</span>
+                    <span class="Album">Lo que me todo vivir</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/xqbo86t3l06pc3xiaekwg/Una-Estrella-M-s-EPDL.wav?rlkey=2dbgpfeogsbwtci26frbvau7p&st=yj9504uy&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/otojz7yc0de3xqyb9t6yh/783588703_1047085541468353_6915517615099943137_n.jpg?rlkey=paxdkveuyztjmzbusfupn7sge&st=xx7xwgzw&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Una Estrella Más EPDL</span>
+                    <span class="item-subtitle">El placoso de la L · Rap</span>
+                    <span class="Album">Lo que me todo vivir</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/zmcybg4pe5jdot0nlj1hw/Quemen-El-Toque-EPDL.wav?rlkey=8ea9fwhcc8ydxdpv0cj5v0xvx&st=584gqe3m&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/otojz7yc0de3xqyb9t6yh/783588703_1047085541468353_6915517615099943137_n.jpg?rlkey=paxdkveuyztjmzbusfupn7sge&st=xx7xwgzw&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Quemen El Toque EPDL</span>
+                    <span class="item-subtitle">El placoso de la L · Rap</span>
+                    <span class="Album">Lo que me todo vivir</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/rr0m9gvd0wpdhcvrsjvh8/Mi-Viejo-Me-Dijo-EPDL.wav?rlkey=4lx2qb0thgoxcum0t6z1ud7yh&st=wdn7so5r&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/otojz7yc0de3xqyb9t6yh/783588703_1047085541468353_6915517615099943137_n.jpg?rlkey=paxdkveuyztjmzbusfupn7sge&st=xx7xwgzw&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Mi Viejo Me Dijo EPDL</span>
+                    <span class="item-subtitle">El placoso de la L · Rap</span>
+                    <span class="Album">Lo que me todo vivir</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/addl4wsvy6ez49r30pwwz/Master_L-Klan-Oficial-Loco-Video-Oficial.wav?rlkey=ptxn39acppgeekjfg6x9qtmi3&st=62dp1u6y&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/otojz7yc0de3xqyb9t6yh/783588703_1047085541468353_6915517615099943137_n.jpg?rlkey=paxdkveuyztjmzbusfupn7sge&st=xx7xwgzw&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">LOCO EPDL</span>
+                    <span class="item-subtitle">El placoso de la L · Rap</span>
+                    <span class="Album">Lo que me todo vivir</span>
+                </div>
+            </div>
+
+            <!-- ==================== Aizber ==================== -->
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/0y977tgyjp66og2ze36uh/SIgoVivoIazberMp3.wav?rlkey=6vdswfh8f3wtqa66seeugc480&st=rj9g6llz&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/9xqi6k1g5cnbior62dh0l/800x800-7986476-B8AD12F4-560F-4E85-8EE3DD6C45025D0E-0-565367-Picsart260207195632530.jpg?rlkey=zjttay9r0myk8r0h1x2074pnj&st=rqbn5ts8&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Sigo Vivo Aicber</span>
+                    <span class="item-subtitle">Aicber · Rap</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/bozqu6d4xdeydcx7dl03i/Recuedos-Aizber-Kerim-Music.mp3?rlkey=t8npubztez45kt79vbt3fidst&st=dbx2f1a4&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/kk1f1fdpsgx7noxb5lly9/800x800-7986476-70C18BD7-1A24-4B1E-9D524972181DB7D1-0-663215-FBIMG17490012695773000x3000.jpg?rlkey=0exgl54ffel1k27ncua1j7kd2&st=xwg464eg&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Recuerdos Aicber</span>
+                    <span class="item-subtitle">Aicber · Rap</span>
+                </div>
+            </div>
+
+            <!-- ==================== Emsek ==================== -->
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/thmc7o0uftl3hhvig4lc6/Entre_tus_Redes_-msek__HM___462__Casero_Records_MP3_256kbps_128k.mp3?rlkey=6raowpgc6b5j5a0h21qyo6p34&st=5jws1foy&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/hu6726a9yx9z9c5w2ns0w/Emsek.jpg?rlkey=llo70vmyjg4u9jfhnq6g9tvr8&st=dqvk5v66&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Entre tus redes Esmek</span>
+                    <span class="item-subtitle">Emsek · Rap</span>
+                    <span class="Album">Volumen 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/jk2c7g0fixoaqv5e5ajri/El-fin-de-hiastoria-EMSEK.wav?rlkey=kxgq808oded0cdhcd6woh3tdz&st=vkmutc4j&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/hu6726a9yx9z9c5w2ns0w/Emsek.jpg?rlkey=llo70vmyjg4u9jfhnq6g9tvr8&st=dqvk5v66&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">El fin de la historia Esmek</span>
+                    <span class="item-subtitle">Emsek · Rap</span>
+                    <span class="Album">Volumen 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/veoiwn4fh0ikcb6rqn39y/Emsek-len-busca-de-labictoria.wav?rlkey=40y7btf8uvd4bxxpk4uaogiwv&st=fhihmz7c&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/hu6726a9yx9z9c5w2ns0w/Emsek.jpg?rlkey=llo70vmyjg4u9jfhnq6g9tvr8&st=dqvk5v66&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">En busca de la victoria Esmek</span>
+                    <span class="item-subtitle">Emsek · Rap</span>
+                    <span class="Album">Volumen 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/rv1nm22lnovi1phko6ufn/Emsek-No-fue-lo-mismo.wav?rlkey=ojx6h1hpudu8q9v4h0b5ncm77&st=fawt5ksq&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/hu6726a9yx9z9c5w2ns0w/Emsek.jpg?rlkey=llo70vmyjg4u9jfhnq6g9tvr8&st=dqvk5v66&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">No fue los mismo Esmek</span>
+                    <span class="item-subtitle">Emsek · Rap</span>
+                    <span class="Album">Volumen 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/4q3fc1b7dcbm3s0irdriy/Emsek-tus-errores.wav?rlkey=dn1bgzk4im7jwxo5p46osot4h&st=bs9g15gb&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/hu6726a9yx9z9c5w2ns0w/Emsek.jpg?rlkey=llo70vmyjg4u9jfhnq6g9tvr8&st=dqvk5v66&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Tus Errores Esmek</span>
+                    <span class="item-subtitle">Emsek · Rap</span>
+                    <span class="Album">Volumen 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/scvt36sujqhsk7abj4q9g/Los-tiempos-cambian-Emsek-ft-Charl-s-weed.wav?rlkey=hbvmut3vj4wyx166y6nv53vi9&st=7ytsyfvs&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/hu6726a9yx9z9c5w2ns0w/Emsek.jpg?rlkey=llo70vmyjg4u9jfhnq6g9tvr8&st=dqvk5v66&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Los tiempos cambian Esmek</span>
+                    <span class="item-subtitle">Emsek Ft Charles wed · Rap</span>
+                    <span class="Album">Volumen 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/vyrkq3cz1d32v6cbrml99/Mi-mussa-Emsek-HFcompany-Estudios.wav?rlkey=8mzfyjhjbqasi7cvcynku8e29&st=f6rkh9hu&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/hu6726a9yx9z9c5w2ns0w/Emsek.jpg?rlkey=llo70vmyjg4u9jfhnq6g9tvr8&st=dqvk5v66&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Musa Esmek</span>
+                    <span class="item-subtitle">Emsek · Rap</span>
+                    <span class="Album">Volumen 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/0b08k7lmf6bi3unghwi0o/Nada-es-secillo-Oswaldo.wav?rlkey=00zjb5omwsyc7lpa4epk2dxzx&st=owffemlr&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/hu6726a9yx9z9c5w2ns0w/Emsek.jpg?rlkey=llo70vmyjg4u9jfhnq6g9tvr8&st=dqvk5v66&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Nada es sencillo Esmek</span>
+                    <span class="item-subtitle">Emsek · Rap</span>
+                    <span class="Album">Volumen 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/09x3ro2pgjk5uytus7qnf/perdoname-emsek-video-oficial.mp3?rlkey=w5wnge74deqrg9j5cugdgso93&st=l9jqz3s2&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/hu6726a9yx9z9c5w2ns0w/Emsek.jpg?rlkey=llo70vmyjg4u9jfhnq6g9tvr8&st=dqvk5v66&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Perdoname Esmek</span>
+                    <span class="item-subtitle">Emsek · Rap</span>
+                    <span class="Album">Volumen 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/8rxh1zmz1jnbw3jnyw30u/Todo-se-Acabo-Emsek.wav?rlkey=gdjt2d5ixehg02f66zrmn2oo4&st=11wubvyf&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/hu6726a9yx9z9c5w2ns0w/Emsek.jpg?rlkey=llo70vmyjg4u9jfhnq6g9tvr8&st=dqvk5v66&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Todo acabo Esmek</span>
+                    <span class="item-subtitle">Emsek · Rap</span>
+                    <span class="Album">Volumen 1</span>
+                </div>
+            </div>
+
+            <!-- ==================== J Vazquez ==================== -->
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/kurcwgvu4c0813rskvtg6/Beyby-J-Vazquez.flac?rlkey=hi0ficbezkryiigcmqt8nfrrr&st=anpkz9kv&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/kfrpspuowtzrkjvwe2kxa/800x800-7986476-EBBCC76E-8564-423A-9B173657F2C27F7C-0-563472-Picsart250629201208586.jpg?rlkey=qglu4yfiepshx5p119dk647du&st=84qnuspr&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">BABY J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/97yj1flb0bgaaedaxr9h1/Te_estoy_Llamando_lista.wav?rlkey=cn3oppwsfjv617hhcuy2rcga4&st=715yp09y&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/kgnxbl0mdp3q2uivbi4et/800x800-7986476-0F948044-9801-4FC9-8EFF36DDC1873148-0-3542185-Teestoyllamando.jpg?rlkey=jki22g8n7mq0b7ufv138n4wsn&st=10uw8nqx&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Te estoy llamando J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/7gcv8k4ke1mglv3jkya1k/El-Chiris.wav?rlkey=hpgsr66ebcy6tyl6ounf7ii81&st=jxoazn66&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/w51t3llqpavnpmxxgus83/el-chiris.png?rlkey=leru6o7n7omsn9b455yqcrf4g&st=zv4scg8y&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">El chiris J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/5mnj6mb2evikxph4wlbyq/j-vazquez-FOTO.wav?rlkey=s1q4uliexbe4bvrtcdrxzm1b2&st=8tu1szip&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/7pxyk1hvrgtdl9fy94alm/J-Vazqeuz-Album-2022.jpg?rlkey=sfb91d32144hgoijxhf0eqbhz&st=k9w3fdxx&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Foto J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/dwovntv7djswyqmguk8yd/j-vazquez-aventura-ft-cie-campos-video-liryc.mp3?rlkey=3durnbujd9955pikh47jgyjob&st=xc0vklla&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/7pxyk1hvrgtdl9fy94alm/J-Vazqeuz-Album-2022.jpg?rlkey=sfb91d32144hgoijxhf0eqbhz&st=u0jdv66d&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Una Aventura J Vazquez ft Cie campos</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/5ojo4u3dak6gytmkcy605/j-vazquez-me-vuelve-loco-fusa-company.mp3?rlkey=ickcmbzdf3wi1k012e0mygo8e&st=7virpnfk&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/7pxyk1hvrgtdl9fy94alm/J-Vazqeuz-Album-2022.jpg?rlkey=sfb91d32144hgoijxhf0eqbhz&st=u0jdv66d&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Me vuelve loco J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/fi7vh0aizey6iod26en48/Obsecion-j-vazquez.wav?rlkey=ch8el1ronylotfeqyv6romnur&st=xumfzh4n&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/7pxyk1hvrgtdl9fy94alm/J-Vazqeuz-Album-2022.jpg?rlkey=sfb91d32144hgoijxhf0eqbhz&st=u0jdv66d&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Obsesion J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/pc1usnse2fyvesvyppsy6/Que-esta-pasando-J-Vazquez.wav?rlkey=x342bg6l9htpo1p7zckkg6583&st=qqyg4qq7&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/7pxyk1hvrgtdl9fy94alm/J-Vazqeuz-Album-2022.jpg?rlkey=sfb91d32144hgoijxhf0eqbhz&st=u0jdv66d&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Que esta pasando J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/00twno5l0kdb08ue26non/Tiempo-Cie-campos-ft-J-Vazquez-Kerim-Music-LKN-Records..wav?rlkey=1ryk8nwj93j0nk9pt8pv6t9uv&st=co15tivd&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/7pxyk1hvrgtdl9fy94alm/J-Vazqeuz-Album-2022.jpg?rlkey=sfb91d32144hgoijxhf0eqbhz&st=u0jdv66d&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Tiempo J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/me17xjy18fcpljgr2d3hi/volver-j-vazquez-video-oficial.mp3?rlkey=3h5tiyv9u527pywplvv7sz9x5&st=ftb2yj3b&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/7pxyk1hvrgtdl9fy94alm/J-Vazqeuz-Album-2022.jpg?rlkey=sfb91d32144hgoijxhf0eqbhz&st=u0jdv66d&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">Volver J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/1h7xgsfdukb0fwz6068bo/Pegaoo-J-Vazquez.wav?rlkey=y2hri9cuhlpmyv21y9br7l5t9&st=cl9lqa7v&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/ofp26lu2vtmkahpv27261/Pegaoo-J-Vazquez.jpg?rlkey=88v0x6qpgrxmpkdvi2bnkl1lq&st=y4r50695&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">pegaoo! J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/3gnc6sadywpb24ps9z4k9/No-eres-juego-de-nintendo-J-bazquez.wav?rlkey=79nintn3bhle2lyye1nb249e6&st=tf6f6kaj&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.dropbox.com/scl/fi/7pxyk1hvrgtdl9fy94alm/J-Vazqeuz-Album-2022.jpg?rlkey=sfb91d32144hgoijxhf0eqbhz&st=u0jdv66d&raw=1" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">No eres juego de nintendo J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton 1</span>
+                </div>
+            </div>
+
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/igoyb7x8feuz6otf67ddt/JBazques14deFrebreroOficial.wav?rlkey=vbgyvxlgyk5t1pl6kojif7w65&st=x1vzpuib&raw=1">
+                <div class="thumbnail">
+                    <img src="https://i.postimg.cc/XNP1xdB2/IMG-20260207-WA0000.jpg" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">14 de febrero J Vazquez</span>
+                    <span class="item-subtitle">J Vazquez · Reggeton</span>
+                    <span class="Album">Reggeton 1</span>
+                </div>
+            </div>
+
+            <!-- ==================== Danuel s ==================== -->
+            <div class="playlist-item"
+                 data-src="https://www.dropbox.com/scl/fi/fvmn4j26twgsls5qruhx7/en-la-intimidad-l-daniels.mp3?rlkey=zkj3ddoqmpczehqxzx707saol&st=9v36eejh&raw=1">
+                <div class="thumbnail">
+                    <img src="https://www.univision.com/_next/image?url=https%3A%2F%2Fst1.uvnimg.com%2F6d%2F2e%2F14017db64ad78524d9345c1b8476%2FREVIVAL%252520INTERSCOPE%252520RECORDS.jpg&w=550&q=75" alt="Portada" loading="lazy">
+                </div>
+                <div class="item-info">
+                    <span class="item-title">En la intimidad</span>
+                    <span class="item-subtitle">Daniels</span>
+                </div>
             </div>
 
         </div>
@@ -142,42 +734,71 @@
             </button>
         </div>
 
-        <div class="purchase-modal-overlay" id="purchase-modal">
-            <div class="modal-content">
-                <button class="close-modal" id="close-modal" aria-label="Cerrar">&times;</button>
+        <div class="artist-profile" id="artist-profile" aria-hidden="true">
+            <div class="ap-header">
+                <span class="ap-header-title">PERFIL DE ARTISTA</span>
+                <button class="ap-close" id="ap-close" type="button" aria-label="Cerrar perfil">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                         stroke="#ffffff" stroke-width="2.4" stroke-linecap="round">
+                        <line x1="6" y1="6"  x2="18" y2="18"/>
+                        <line x1="18" y1="6" x2="6"  y2="18"/>
+                    </svg>
+                </button>
+            </div>
 
-                <h2 class="modal-title">COMPRA DE BEATS</h2>
-
-                <div class="modal-cover">
-                    <img id="modal-img" src="" alt="Portada del beat">
+            <div class="ap-scroll" id="ap-scroll">
+                <div class="ap-hero" id="ap-hero">
+                    <img class="ap-hero-img" id="ap-hero-img" alt="Portada del artista" loading="lazy">
+                    <div class="ap-hero-shade"></div>
+                    <h1 class="ap-artist-name" id="ap-artist-name">Artista</h1>
                 </div>
 
-                <h3 class="modal-beat-title" id="modal-beat-title">Titulo</h3>
-
-                <p class="modal-description">
-                    Todos nuestros beats son 100 % originales y de nuestra propia creación. La compra de los archivos en formato MP3 o WAV es comercial, y la licencia exclusiva es única, lo que significa que el beat adquirido bajo exclusividad no se volverá a vender a ningún otro artista.
-                </p>
-
-                <div class="modal-pricing">
-                    <div class="price-option">
-                        <span class="price-label">MP3</span>
-                        <button class="price-button" data-type="mp3">$300</button>
+                <div class="ap-stats">
+                    <div class="ap-total">
+                        <span class="ap-total-label">Total de Reproducciones:</span>
+                        <span class="ap-total-value" id="ap-total-plays">0</span>
                     </div>
-                    <div class="price-option">
-                        <span class="price-label">WAV</span>
-                        <button class="price-button" data-type="wav">$600</button>
-                    </div>
-                    <div class="price-option">
-                        <span class="price-label">UNICO</span>
-                        <button class="price-button" data-type="exclusivo">Consultar</button>
-                    </div>
+                    <button class="ap-listen-btn" id="ap-listen-btn" type="button">Escuchar mi música</button>
                 </div>
+
+                <div class="ap-grid" id="ap-grid"></div>
+            </div>
+        </div>
+
+        <div class="album-view" id="album-view" aria-hidden="true">
+
+            <div class="av-header">
+                <button class="av-back" id="av-back" type="button" aria-label="Volver">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                         stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"
+                         stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
+
+                <h1 class="av-title" id="av-title">Álbum</h1>
+
+                <button class="av-toggle" id="av-toggle" type="button">Modo de lista</button>
+            </div>
+
+            <div class="av-scroll" id="av-scroll">
+                <div class="av-carousel" id="av-carousel"></div>
+                <div class="av-list" id="av-list"></div>
+            </div>
+
+            <div class="av-footer">
+                <button class="av-play-all" id="av-play-all" type="button">
+                    Escuchar todo el álbum
+                </button>
             </div>
         </div>
 
     </div>
 
     <audio id="audio-player" preload="metadata"></audio>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script src="script.js"></script>
 </body>
