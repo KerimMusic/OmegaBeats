@@ -1,184 +1,863 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Reproductor de Música UI</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+document.addEventListener('DOMContentLoaded', () => {
 
-    <div class="app-container">
+    const playButton     = document.getElementById('play-button');
+    const playIcon       = document.getElementById('play-icon');
+    const audioPlayer    = document.getElementById('audio-player');
+    const progressBar    = document.getElementById('progress-bar');
+    const currentTimeEl  = document.getElementById('current-time');
+    const durationEl     = document.getElementById('duration');
+    const playerTitle    = document.getElementById('player-title');
+    const playerCover    = document.getElementById('player-cover');
+    const player         = document.getElementById('player');
+    const playlist       = document.getElementById('playlist');
 
-        <header class="top-bar">
-            <button class="menu-btn" id="menu-btn" aria-label="Abrir menú">
-                <svg viewBox="0 0 24 24" width="28" height="28">
-                    <line x1="3" y1="6"  x2="21" y2="6"  stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="3" y1="12" x2="21" y2="12" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
-                    <line x1="3" y1="18" x2="21" y2="18" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
-                </svg>
-            </button>
+    const purchaseModal  = document.getElementById('purchase-modal');
+    const closeModalBtn  = document.getElementById('close-modal');
+    const modalImg       = document.getElementById('modal-img');
+    const modalBeatTitle = document.getElementById('modal-beat-title');
 
-            <div class="header-logo">
-                <img src="https://www.dropbox.com/scl/fi/6e7qxx06cip1720viw4zt/Omega.png?rlkey=pujvgx4l2w9cl3c2wiyk0tbgf&amp;st=niezkaoj&amp;raw=1"
-                     alt="Omega Beats" loading="lazy">
-            </div>
+    let currentItem = null;
+    let modalItem   = null;
+    let isSkipping  = false;
 
-            <div class="header-actions">
-                <button class="heart-search-btn" id="heart-search-btn" aria-label="Buscar Beat">
-                    <svg viewBox="0 0 24 24" width="32" height="32" fill="#ff2a2a">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    const ICON_PLAY  = '<polygon points="5,3 19,12 5,21" fill="#ffffff" />';
+    const ICON_PAUSE = '<rect x="6" y="4" width="4" height="16" fill="#ffffff" />' +
+                       '<rect x="14" y="4" width="4" height="16" fill="#ffffff" />';
+
+    /* ---------- Feel nativo: haptics + ripple ---------- */
+
+    function haptic(ms) {
+        if (navigator.vibrate) {
+            try { navigator.vibrate(ms || 12); } catch (_) {}
+        }
+    }
+
+    function attachRipple(el, options) {
+        if (!el || el.dataset.rippleReady === '1') return;
+        el.dataset.rippleReady = '1';
+
+        if (getComputedStyle(el).position === 'static') {
+            el.style.position = 'relative';
+        }
+        el.classList.add('ripple-host');
+
+        el.addEventListener('pointerdown', (e) => {
+            const rect = el.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = (e.clientX || rect.left + rect.width / 2) - rect.left;
+            const y = (e.clientY || rect.top + rect.height / 2) - rect.top;
+
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.width  = ripple.style.height = size + 'px';
+            ripple.style.left   = (x - size / 2) + 'px';
+            ripple.style.top    = (y - size / 2) + 'px';
+            el.appendChild(ripple);
+            ripple.addEventListener('animationend', () => ripple.remove());
+        });
+
+        el.addEventListener('pointerdown', () => haptic(options && options.haptic), { passive: true });
+    }
+
+    ['.menu-btn', '.heart-search-btn', '.share-btn', '.close-submenu',
+     '.close-modal', '.submenu-link', '.buy-button', '.price-button', '.play-button']
+        .forEach(selector => {
+            document.querySelectorAll(selector).forEach(el => attachRipple(el));
+        });
+
+    document.querySelectorAll('.playlist-item').forEach(el => {
+        attachRipple(el, { haptic: 0 });
+        el.style.setProperty('--ripple-color', 'rgba(255, 255, 255, 0.10)');
+    });
+
+    /* ---------- Utilidades ---------- */
+
+    function formatTime(seconds) {
+        if (!isFinite(seconds) || seconds < 0) return '0:00';
+        const minutes = Math.floor(seconds / 60);
+        const secs    = Math.floor(seconds % 60);
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    function updateProgress(percent) {
+        const value = Math.min(100, Math.max(0, percent));
+        progressBar.style.setProperty('--progress', `${value}%`);
+        progressBar.setAttribute('aria-valuenow', Math.round(value));
+    }
+
+    function updateIcon(playing) {
+        playIcon.innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
+        playIcon.style.marginLeft = playing ? '0' : '3px';
+        playButton.setAttribute('aria-label', playing ? 'Pausar' : 'Reproducir');
+    }
+
+    function getAllItems() {
+        return Array.from(playlist.querySelectorAll('.playlist-item'));
+    }
+
+    function getItemTitle(item) {
+        if (!item) return '';
+        return (
+            item.querySelector('.item-title')?.textContent.trim() ||
+            item.dataset.title?.trim() ||
+            ''
+        );
+    }
+
+    function getItemCover(item) {
+        if (!item) return '';
+        const img = item.querySelector('.thumbnail img');
+        if (img && img.getAttribute('src')) return img.src;
+        return item.dataset.cover || '';
+    }
+
+    /* ---------- Mezclar ---------- */
+
+    function shufflePlaylist() {
+        const items = getAllItems();
+        for (let i = items.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [items[i], items[j]] = [items[j], items[i]];
+        }
+        items.forEach(item => playlist.appendChild(item));
+    }
+
+    /* ---------- Cargar item ---------- */
+
+    function loadItem(item, autoplay = true) {
+        if (!item) return;
+
+        const src   = item.dataset.src;
+        const cover = getItemCover(item);
+        const title = getItemTitle(item);
+
+        if (!src) {
+            console.warn('Ítem sin data-src:', item);
+            handleLoadError(item);
+            return;
+        }
+
+        getAllItems().forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+
+        currentItem = item;
+        playerCover.src = cover || '';
+        playerTitle.textContent = title;
+        player.classList.add('active');
+
+        audioPlayer.src = src;
+        audioPlayer.currentTime = 0;
+        updateProgress(0);
+        currentTimeEl.textContent = '0:00';
+        durationEl.textContent = '0:00';
+
+        if (autoplay) {
+            audioPlayer.play().catch(err => {
+                console.warn('No se pudo iniciar automáticamente:', err);
+            });
+        }
+    }
+
+    function handleLoadError(failedItem) {
+        if (isSkipping) return;
+        isSkipping = true;
+
+        console.warn('Pista no reproducible:', getItemTitle(failedItem) || failedItem);
+
+        updateIcon(false);
+        updateProgress(0);
+        currentTimeEl.textContent = '0:00';
+        durationEl.textContent = '0:00';
+
+        setTimeout(() => {
+            isSkipping = false;
+            playRandomItem();
+        }, 300);
+    }
+
+    audioPlayer.addEventListener('error', () => {
+        handleLoadError(currentItem);
+    });
+
+    function playRandomItem() {
+        const items = getAllItems();
+        if (items.length === 0) return;
+
+        let candidates = items;
+        if (items.length > 1 && currentItem) {
+            candidates = items.filter(i => i !== currentItem);
+        }
+        const randomItem = candidates[Math.floor(Math.random() * candidates.length)];
+        loadItem(randomItem, true);
+    }
+
+    shufflePlaylist();
+
+    /* ---------- Play ---------- */
+
+    playButton.addEventListener('click', () => {
+        if (!currentItem) {
+            playRandomItem();
+            return;
+        }
+        if (audioPlayer.paused) {
+            audioPlayer.play().catch(err => console.error('Error al reproducir:', err));
+        } else {
+            audioPlayer.pause();
+        }
+    });
+
+    /* ---------- Eventos de audio ---------- */
+
+    audioPlayer.addEventListener('play',  () => updateIcon(true));
+    audioPlayer.addEventListener('pause', () => updateIcon(false));
+
+    audioPlayer.addEventListener('loadedmetadata', () => {
+        durationEl.textContent = formatTime(audioPlayer.duration);
+    });
+
+    audioPlayer.addEventListener('timeupdate', () => {
+        currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+        if (audioPlayer.duration > 0) {
+            updateProgress((audioPlayer.currentTime / audioPlayer.duration) * 100);
+        }
+    });
+
+    audioPlayer.addEventListener('ended', () => {
+        updateIcon(false);
+        updateProgress(0);
+        currentTimeEl.textContent = '0:00';
+        playRandomItem();
+    });
+
+    /* ---------- Buscar en barra de progreso ---------- */
+
+    progressBar.addEventListener('click', (e) => {
+        if (!audioPlayer.duration) return;
+        const rect  = progressBar.getBoundingClientRect();
+        const ratio = (e.clientX - rect.left) / rect.width;
+        audioPlayer.currentTime = Math.min(1, Math.max(0, ratio)) * audioPlayer.duration;
+    });
+
+    /* ---------- Lista + COMPRAR ---------- */
+
+    playlist.addEventListener('click', (e) => {
+        if (e.target.closest('.buy-button')) {
+            const item = e.target.closest('.playlist-item');
+            if (!item) return;
+
+            const title = getItemTitle(item) || 'Titulo';
+            const cover = getItemCover(item);
+
+            modalBeatTitle.textContent = title;
+            modalImg.src = cover;
+
+            modalItem = item;
+            purchaseModal.classList.add('visible');
+
+            e.stopPropagation();
+            return;
+        }
+
+        const item = e.target.closest('.playlist-item');
+        if (!item) return;
+        loadItem(item, true);
+    });
+
+    /* ---------- Modal ---------- */
+
+    closeModalBtn.addEventListener('click', () => {
+        purchaseModal.classList.remove('visible');
+    });
+
+    purchaseModal.addEventListener('click', (e) => {
+        if (e.target === purchaseModal) {
+            purchaseModal.classList.remove('visible');
+        }
+    });
+
+    /* ---------- Compra → Telegram ---------- */
+
+    const TELEGRAM_USER = 'https://t.me/Soporte95';
+
+    const LICENSE_INFO = {
+        mp3:       { nombre: 'MP3',       precio: '$300 MXN' },
+        wav:       { nombre: 'WAV',       precio: '$600 MXN' },
+        exclusivo: { nombre: 'EXCLUSIVA', precio: 'A convenir con el Beatmaker' }
+    };
+
+    function buildTelegramUrl(beatTitle, beatInfo, licencia) {
+        const esExclusiva = licencia.nombre === 'EXCLUSIVA';
+
+        const bloquePrecio = esExclusiva
+            ? 'Precio: A convenir directamente con el Beatmaker\n'
+            : `Precio: ${licencia.precio}\n`;
+
+        const mensaje =
+            'Hola, quiero comprar este beat.\n\n' +
+            `Beat: ${beatTitle}\n` +
+            `Licencia: ${licencia.nombre}\n` +
+            bloquePrecio +
+            '\nInformación del beat:\n' +
+            `${beatInfo}`;
+
+        return `${TELEGRAM_USER}?text=${encodeURIComponent(mensaje)}`;
+    }
+
+    document.querySelectorAll('.price-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const type = e.target.dataset.type;
+            const licencia = LICENSE_INFO[type];
+            if (!licencia) return;
+
+            const source = modalItem || currentItem;
+            const beatTitle =
+                getItemTitle(source) ||
+                modalBeatTitle.textContent.trim() ||
+                'Sin título';
+
+            const subtitle =
+                source?.querySelector('.item-subtitle')?.textContent.trim() || '';
+
+            const beatInfo = subtitle || 'No disponible';
+
+            const url = buildTelegramUrl(beatTitle, beatInfo, licencia);
+
+            window.open(url, '_blank');
+            purchaseModal.classList.remove('visible');
+        });
+    });
+
+    /* ---------- Sincronización de portadas ---------- */
+    const coverObserver = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            const img  = mutation.target;
+            const item = img.closest('.playlist-item');
+            if (!item) return;
+
+            const newSrc = img.getAttribute('src') || '';
+
+            if (item === currentItem) {
+                playerCover.src = newSrc;
+            }
+            if (item === modalItem && purchaseModal.classList.contains('visible')) {
+                modalImg.src = newSrc;
+            }
+        });
+    });
+
+    getAllItems().forEach(item => {
+        const img = item.querySelector('.thumbnail img');
+        if (img) {
+            coverObserver.observe(img, { attributes: true, attributeFilter: ['src'] });
+        }
+    });
+
+    /* ---------- Buscar (corazón) ---------- */
+    const heartSearchBtn  = document.getElementById('heart-search-btn');
+    const searchContainer = document.getElementById('search-container');
+    const searchInput     = document.getElementById('search-input');
+
+    if (heartSearchBtn && searchContainer && searchInput) {
+
+        heartSearchBtn.addEventListener('click', () => {
+            searchContainer.classList.toggle('visible');
+
+            if (searchContainer.classList.contains('visible')) {
+                searchInput.focus();
+            } else {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const items = document.querySelectorAll('.playlist-item');
+
+            items.forEach(item => {
+                const title    = item.querySelector('.item-title')?.textContent.toLowerCase() || '';
+                const subtitle = item.querySelector('.item-subtitle')?.textContent.toLowerCase() || '';
+
+                if (title.includes(query) || subtitle.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    /* ---------- Compartir ---------- */
+    const shareBtn = document.getElementById('share-btn');
+    const SHARE_URL = 'https://kerimmusic.github.io/DescargarAppOmegaBeats/';
+
+    if (shareBtn) {
+        shareBtn.addEventListener('click', () => {
+            const currentTitle = currentItem ? getItemTitle(currentItem) : document.title;
+            const shareData = {
+                title: 'Omega Beats',
+                text:  currentTitle ? `Escucha este beat: ${currentTitle}` : 'Escucha Omega Beats',
+                url:   SHARE_URL
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => console.log('Compartido con éxito'))
+                    .catch((error) => console.log('Error al compartir:', error));
+            } else {
+                const textToCopy = `${shareData.text}\n${SHARE_URL}`;
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    alert('¡Enlace y título copiados al portapapeles!');
+                }).catch(err => {
+                    console.error('Error al copiar:', err);
+                    alert('No se pudo compartir automáticamente. Copia este enlace: ' + SHARE_URL);
+                });
+            }
+        });
+    }
+
+    /* ---------- Submenú ---------- */
+    const menuBtn         = document.getElementById('menu-btn');
+    const submenu         = document.getElementById('submenu');
+    const submenuOverlay  = document.getElementById('submenu-overlay');
+    const closeSubmenuBtn = document.getElementById('close-submenu');
+
+    function openSubmenu() {
+        if (!submenu || !submenuOverlay) return;
+        submenu.classList.add('visible');
+        submenuOverlay.classList.add('visible');
+        submenu.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSubmenu() {
+        if (!submenu || !submenuOverlay) return;
+        submenu.classList.remove('visible');
+        submenuOverlay.classList.remove('visible');
+        submenu.setAttribute('aria-hidden', 'true');
+    }
+
+    if (menuBtn)         menuBtn.addEventListener('click', openSubmenu);
+    if (closeSubmenuBtn) closeSubmenuBtn.addEventListener('click', closeSubmenu);
+    if (submenuOverlay)  submenuOverlay.addEventListener('click', closeSubmenu);
+
+    document.querySelectorAll('.submenu-link').forEach(link => {
+        link.addEventListener('click', closeSubmenu);
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSubmenu();
+    });
+
+    /* ============================================================
+       REPRODUCTOR A PANTALLA COMPLETA (VINILO + SWIPE VERTICAL)
+       ============================================================ */
+
+    if (!player || !audioPlayer || !playlist || !playerCover || !playerTitle || !playButton) return;
+
+    /* ---------- 1. INYECTAR HTML ---------- */
+    const fsHTML = `
+        <div class="fs-player" id="fs-player" aria-hidden="true">
+            <div class="fs-bg" id="fs-bg"></div>
+
+            <div class="fs-top-bar">
+                <button class="fs-close" id="fs-close" aria-label="Cerrar">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+                         stroke="#ffffff" stroke-width="2.4" stroke-linecap="round">
+                        <line x1="6" y1="6"  x2="18" y2="18"/>
+                        <line x1="18" y1="6" x2="6"  y2="18"/>
                     </svg>
                 </button>
-
-                <button class="share-btn" id="share-btn" aria-label="Compartir">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="18" cy="5"  r="3" fill="#ffffff" stroke="none"/>
-                        <circle cx="6"  cy="12" r="3" fill="#ffffff" stroke="none"/>
-                        <circle cx="18" cy="19" r="3" fill="#ffffff" stroke="none"/>
-                        <line x1="8.59"  y1="13.51" x2="15.42" y2="17.49"/>
-                        <line x1="15.41" y1="6.51"  x2="8.59"  y2="10.49"/>
-                    </svg>
-                </button>
-            </div>
-        </header>
-
-        <div class="submenu-overlay" id="submenu-overlay"></div>
-        <nav class="submenu" id="submenu" aria-hidden="true">
-            <div class="submenu-header">
-                <span class="submenu-title">MENÚ</span>
-                <button class="close-submenu" id="close-submenu" aria-label="Cerrar menú">&times;</button>
-            </div>
-            <ul class="submenu-list">
-                <li><a href="https://kerimmusic.github.io/informacionOmegaBeats/" class="submenu-link">Informacion</a></li>
-                <li><a href="https://kerimmusic.github.io/Kerim-Music/" class="submenu-link">Musica Kerim Music</a></li>
-                <li><a href="https://kerimmusic.github.io/GrupoOmegaBeats/" class="submenu-link">Grupo y Comunidad</a></li>
-                <li><a href="https://kerimmusic.github.io/DescargarAppOmegaBeats/" class="submenu-link">Compartir App</a></li>
-            </ul>
-        </nav>
-
-        <div class="search-container" id="search-container">
-            <input type="text" class="search-input" id="search-input" placeholder="Buscar beat por título...">
-        </div>
-
-        <div class="playlist" id="playlist">
-
-            <div class="playlist-item"
-                 data-src="https://www.dropbox.com/scl/fi/plzx3y8r6o3yek9t7va96/Beats-Wav-150-BPM-Bb.wav?rlkey=9aooxmnkx20iefpkki0svp2eu&amp;st=mjwyd8l1&amp;raw=1">
-                <div class="thumbnail">
-                    <img src="https://www.dropbox.com/scl/fi/dxpsq9dmhgyms68dq5p6d/Beats-Sex.jpg?rlkey=qg2lmvf96f76y7xvtgvnci1dq&amp;st=ab9v4mdi&amp;raw=1"
-                         alt="Portada" loading="lazy">
-                </div>
-                <div class="item-info">
-                    <span class="item-title">"OBSESION" Trap Instrumental Sensual Pista De Trap Sensual</span>
-                    <span class="item-subtitle"></span>
-                </div>
-                <button class="buy-button">COMPRAR</button>
             </div>
 
-            <div class="playlist-item"
-                 data-src="https://www.dropbox.com/scl/fi/qjnzap6t8hvqob79sqxh8/Muertos-Sin-Miedo-Trap-Instrumental.wav?rlkey=3c2ztpt3d3gxx9tojvo2uaiml&st=9uc6hzr5&raw=1">
-                <div class="thumbnail">
-                    <img src="https://www.dropbox.com/scl/fi/b23zdbgyuf1fkyugo1uiy/Picsart_26-09-14_21-05-54-571.jpg?rlkey=c7hcf50ih6pgq2cmexa0mfvge&st=ak7wxvum&raw=1"
-                         alt="Portada" loading="lazy">
-                </div>
-                <div class="item-info">
-                    <span class="item-title">MUERTO SIN MIEDO – Trap Beat | Dark & Emotional Trap Instrumental 2026</span>
-                    <span class="item-subtitle"></span>
-                </div>
-                <button class="buy-button">COMPRAR</button>
-            </div>
-
-            <div class="playlist-item"
-                 data-src="https://www.dropbox.com/scl/fi/k7wcf8wvascsy0eyjr1oq/Cielo-urbano-al-anochecer.wav?rlkey=vbi4jqtyvxyeloorsxkficx7q&st=4q1u7sew&raw=1">
-                <div class="thumbnail">
-                    <img src="https://www.dropbox.com/scl/fi/cxu5ax7kkq1dv1gq53z19/Picsart_26-09-14_21-23-18-314.jpg?rlkey=dcobigf2ljpqpne9inhzblsjd&st=rr02sl4c&raw=1"
-                         alt="Portada" loading="lazy">
-                </div>
-                <div class="item-info">
-                    <span class="item-title">CIELO URBANO AL ANOCHECER | Piano Acústico Instrumental</span>
-                    <span class="item-subtitle"></span>
-                </div>
-                <button class="buy-button">COMPRAR</button>
-            </div>
-
-            <div class="playlist-item"
-                 data-src="https://www.dropbox.com/scl/fi/8s5tthk3mffq2nsatdxp3/Beats-Reggeton-wav.wav?rlkey=vwqolcryz3vuj6oj88tz0hxjr&st=s6trmnw1&raw=1">
-                <div class="thumbnail">
-                    <img src="https://www.dropbox.com/scl/fi/xu7vaubbg83d1zqvdg5mq/Picsart_26-09-15_14-44-35-297.jpg?rlkey=k6f5fc4y2k0hsg4shbvx9bgrr&st=fzzhv89k&raw=1"
-                         alt="Portada" loading="lazy">
-                </div>
-                <div class="item-info">
-                    <span class="item-title">ACÉRCATE — Reggaetón Beat | Latin Urban</span>
-                    <span class="item-subtitle"></span>
-                </div>
-                <button class="buy-button">COMPRAR</button>
-            </div>
-
-        </div>
-
-        <div class="player" id="player">
-
-            <div class="player-thumbnail" id="player-thumbnail">
-                <img id="player-cover" alt="Portada">
-            </div>
-
-            <div class="player-center">
-                <div class="player-title" id="player-title">Titulo del Beats</div>
-                <div class="progress-bar" id="progress-bar" role="slider"
-                     aria-label="Progreso" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                    <div class="progress-thumb" id="progress-thumb"></div>
-                </div>
-                <div class="time-labels">
-                    <span id="current-time">0:00</span>
-                    <span id="duration">0:00</span>
-                </div>
-            </div>
-
-            <button class="play-button" id="play-button" type="button" aria-label="Reproducir">
-                <svg id="play-icon" viewBox="0 0 24 24" width="22" height="22">
-                    <polygon points="5,3 19,12 5,21" fill="#ffffff" />
-                </svg>
-            </button>
-        </div>
-
-        <div class="purchase-modal-overlay" id="purchase-modal">
-            <div class="modal-content">
-                <button class="close-modal" id="close-modal" aria-label="Cerrar">&times;</button>
-
-                <h2 class="modal-title">COMPRA DE BEATS</h2>
-
-                <div class="modal-cover">
-                    <img id="modal-img" src="" alt="Portada del beat">
-                </div>
-
-                <h3 class="modal-beat-title" id="modal-beat-title">Titulo</h3>
-
-                <p class="modal-description">
-                    Todos nuestros beats son 100 % originales y de nuestra propia creación. La compra de los archivos en formato MP3 o WAV es comercial, y la licencia exclusiva es única, lo que significa que el beat adquirido bajo exclusividad no se volverá a vender a ningún otro artista.
-                </p>
-
-                <div class="modal-pricing">
-                    <div class="price-option">
-                        <span class="price-label">MP3</span>
-                        <button class="price-button" data-type="mp3">$300</button>
+            <div class="fs-content" id="fs-content">
+                <div class="fs-vinyl-wrap" id="fs-vinyl-wrap">
+                    <div class="fs-vinyl" id="fs-vinyl">
+                        <img class="fs-cover" id="fs-cover" alt="Portada">
                     </div>
-                    <div class="price-option">
-                        <span class="price-label">WAV</span>
-                        <button class="price-button" data-type="wav">$600</button>
-                    </div>
-                    <div class="price-option">
-                        <span class="price-label">UNICO</span>
-                        <button class="price-button" data-type="exclusivo">Consultar</button>
-                    </div>
+                    <span class="fs-spindle"></span>
                 </div>
+
+                <h2 class="fs-title" id="fs-title">Título del Beat</h2>
+
+                <button class="fs-buy" id="fs-buy">COMPRAR</button>
             </div>
         </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', fsHTML);
 
-    </div>
+    /* ---------- 2. INYECTAR CSS ---------- */
+    const styleEl = document.createElement('style');
+    styleEl.id = 'fs-player-styles';
+    styleEl.textContent = `
+    .fs-player {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: #050505;
+        z-index: 900;
+        display: flex;
+        flex-direction: column;
+        transform: translateY(100%);
+        transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        overflow: hidden;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .fs-player.visible { transform: translateY(0); }
+    .fs-player:not(.visible) { pointer-events: none; }
 
-    <audio id="audio-player" preload="metadata"></audio>
+    .fs-bg {
+        position: absolute;
+        inset: -10%;
+        background-size: cover;
+        background-position: center;
+        filter: blur(60px) brightness(0.35) saturate(1.15);
+        transform: scale(1.2);
+        z-index: 0;
+        pointer-events: none;
+        transition: background-image 0.4s ease;
+    }
 
-    <script src="script.js"></script>
-</body>
-</html>
+    .fs-top-bar {
+        position: relative;
+        z-index: 3;
+        display: flex;
+        justify-content: flex-end;
+        padding: 18px 18px 0;
+        flex-shrink: 0;
+    }
+
+    .fs-close {
+        background: rgba(255,255,255,0.08);
+        border: none;
+        border-radius: 50%;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s ease, transform 0.15s ease;
+    }
+    .fs-close:active {
+        transform: scale(0.9);
+        background: rgba(255,255,255,0.18);
+    }
+
+    .fs-content {
+        position: relative;
+        z-index: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 34px;
+        padding: 0 30px 50px;
+        transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease;
+        min-height: 0;
+    }
+
+    .fs-vinyl-wrap {
+        position: relative;
+        width: min(72vw, 62vh, 380px);
+        aspect-ratio: 1 / 1;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .fs-vinyl {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #0a0a0a;
+        box-shadow:
+            0 0 0 12px #0b0b0b,
+            0 0 0 14px #1c1c1c,
+            0 0 0 15px #060606,
+            0 25px 60px rgba(0,0,0,0.85),
+            0 0 90px rgba(255,42,42,0.10);
+        animation: fs-spin 14s linear infinite;
+        animation-play-state: paused;
+        position: relative;
+        will-change: transform;
+    }
+    .fs-vinyl.playing { animation-play-state: running; }
+
+    .fs-cover {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .fs-spindle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #3a3a3a 0%, #111 45%, #000 100%);
+        transform: translate(-50%, -50%);
+        box-shadow:
+            inset 0 2px 4px rgba(255,255,255,0.20),
+            0 0 0 3px rgba(0,0,0,0.60);
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    @keyframes fs-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+    }
+
+    .fs-title {
+        font-size: clamp(20px, 5.4vw, 28px);
+        font-weight: 800;
+        line-height: 1.25;
+        text-align: center;
+        color: #ffffff;
+        max-width: 100%;
+        word-break: break-word;
+        text-shadow: 0 2px 12px rgba(0,0,0,0.65);
+        padding: 0 8px;
+    }
+
+    .fs-buy {
+        background: #ff2a2a;
+        color: #ffffff;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 70px;
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(255,42,42,0.42);
+        transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+        flex-shrink: 0;
+    }
+    .fs-buy:active { transform: scale(0.95); }
+
+    @media (max-height: 640px) {
+        .fs-content { gap: 20px; padding-bottom: 26px; }
+        .fs-buy { padding: 12px 55px; font-size: 15px; }
+    }
+    `;
+    document.head.appendChild(styleEl);
+
+    /* ---------- 3. REFERENCIAS ---------- */
+    const fsPlayer    = document.getElementById('fs-player');
+    const fsBg        = document.getElementById('fs-bg');
+    const fsContent   = document.getElementById('fs-content');
+    const fsVinyl     = document.getElementById('fs-vinyl');
+    const fsCover     = document.getElementById('fs-cover');
+    const fsTitle     = document.getElementById('fs-title');
+    const fsBuy       = document.getElementById('fs-buy');
+    const fsClose     = document.getElementById('fs-close');
+
+    /* ---------- 4. SINCRONIZACIÓN ---------- */
+    let lastCoverSrc = '';
+
+    function syncFromMini() {
+        const newCover = playerCover.getAttribute('src') || '';
+        const newTitle = (playerTitle.textContent || '').trim() || 'Título del Beat';
+
+        if (newCover && newCover !== lastCoverSrc) {
+            fsCover.src = newCover;
+            fsBg.style.backgroundImage = `url("${newCover}")`;
+            lastCoverSrc = newCover;
+        } else if (!newCover) {
+            fsCover.removeAttribute('src');
+            fsBg.style.backgroundImage = '';
+            lastCoverSrc = '';
+        }
+
+        fsTitle.textContent = newTitle;
+    }
+
+    const syncObserver = new MutationObserver(() => syncFromMini());
+    syncObserver.observe(playerCover, { attributes: true, attributeFilter: ['src'] });
+    syncObserver.observe(playerTitle, { childList: true, characterData: true, subtree: true });
+
+    function updateVinylState() {
+        if (audioPlayer.paused) fsVinyl.classList.remove('playing');
+        else                    fsVinyl.classList.add('playing');
+    }
+    audioPlayer.addEventListener('play',  updateVinylState);
+    audioPlayer.addEventListener('pause', updateVinylState);
+    audioPlayer.addEventListener('ended', updateVinylState);
+
+    /* ---------- 5. ABRIR / CERRAR ---------- */
+    function openFullscreen() {
+        if (!playlist.querySelector('.playlist-item.active')) {
+            playButton.click();
+        }
+        syncFromMini();
+        setTimeout(syncFromMini, 120);
+        setTimeout(syncFromMini, 400);
+
+        fsPlayer.classList.add('visible');
+        fsPlayer.setAttribute('aria-hidden', 'false');
+        updateVinylState();
+    }
+
+    function closeFullscreen() {
+        fsPlayer.classList.remove('visible');
+        fsPlayer.setAttribute('aria-hidden', 'true');
+    }
+
+    fsClose.addEventListener('click', closeFullscreen);
+
+    /* ---------- 6. GESTOS ROBUSTOS (document-level tracking) ---------- */
+    function attachGesture(el, onGesture) {
+        el.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            if (e.target.closest('button')) return;
+
+            const sx = e.clientX, sy = e.clientY, st = Date.now();
+            const target = e.target;
+            const pid = e.pointerId;
+
+            function onUp(e2) {
+                if (e2.pointerId !== pid) return;
+                document.removeEventListener('pointerup', onUp);
+                document.removeEventListener('pointercancel', onCancel);
+                onGesture({
+                    dx: e2.clientX - sx,
+                    dy: e2.clientY - sy,
+                    dt: Date.now() - st,
+                    target
+                });
+            }
+            function onCancel(e2) {
+                if (e2.pointerId !== pid) return;
+                document.removeEventListener('pointerup', onUp);
+                document.removeEventListener('pointercancel', onCancel);
+            }
+
+            document.addEventListener('pointerup', onUp);
+            document.addEventListener('pointercancel', onCancel);
+        });
+    }
+
+    /* --- Mini reproductor:
+       Tap → abrir pantalla completa
+       Swipe ↑ → abrir pantalla completa
+    */
+    attachGesture(player, ({ dx, dy, dt, target }) => {
+        const absX = Math.abs(dx), absY = Math.abs(dy);
+        const onProgress = target && target.closest && target.closest('#progress-bar');
+
+        if (!onProgress && dt < 400 && absX < 12 && absY < 12) {
+            openFullscreen();
+            return;
+        }
+
+        if (dt > 800) return;
+        if (absY > 40 && absY > absX * 1.2 && dy < 0) {
+            openFullscreen();
+        }
+    });
+
+    /* --- Pantalla completa:
+       Tap sobre el vinilo → play / pause
+       Swipe vertical → siguiente / anterior beat
+    */
+    attachGesture(fsPlayer, ({ dx, dy, dt, target }) => {
+        const absX = Math.abs(dx), absY = Math.abs(dy);
+        const onVinyl = target && target.closest && target.closest('.fs-vinyl-wrap');
+
+        if (onVinyl && dt < 400 && absX < 12 && absY < 12) {
+            playButton.click();
+            return;
+        }
+
+        if (dt > 1200) return;
+        if (absY > 50 && absY > absX * 1.3) {
+            if (dy < 0) goNext();
+            else        goPrev();
+        }
+    });
+
+    /* ---------- 7. NAVEGACIÓN TIPO TIKTOK ---------- */
+    function getItems() {
+        return Array.from(playlist.querySelectorAll('.playlist-item'));
+    }
+
+    function getActiveIndex() {
+        const items  = getItems();
+        const active = playlist.querySelector('.playlist-item.active');
+        return items.indexOf(active);
+    }
+
+    function animateSlide(direction) {
+        fsContent.style.transition = 'none';
+        fsContent.style.transform  = direction === 'up' ? 'translateY(30px)' : 'translateY(-30px)';
+        fsContent.style.opacity    = '0';
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                fsContent.style.transition = 'transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.32s ease';
+                fsContent.style.transform  = 'translateY(0)';
+                fsContent.style.opacity    = '1';
+            });
+        });
+    }
+
+    function resetVinylSpin() {
+        fsVinyl.style.animation = 'none';
+        void fsVinyl.offsetHeight;
+        fsVinyl.style.animation = '';
+        updateVinylState();
+    }
+
+    function goNext() {
+        const items = getItems();
+        if (!items.length) return;
+        let idx = getActiveIndex();
+        if (idx === -1) idx = 0;
+        const nextIdx = (idx + 1) % items.length;
+
+        animateSlide('up');
+        items[nextIdx].click();
+        setTimeout(resetVinylSpin, 60);
+    }
+
+    function goPrev() {
+        const items = getItems();
+        if (!items.length) return;
+        let idx = getActiveIndex();
+        if (idx === -1) idx = 0;
+        const prevIdx = (idx - 1 + items.length) % items.length;
+
+        animateSlide('down');
+        items[prevIdx].click();
+        setTimeout(resetVinylSpin, 60);
+    }
+
+    /* ---------- 8. BOTÓN COMPRAR ---------- */
+    fsBuy.addEventListener('click', () => {
+        const active = playlist.querySelector('.playlist-item.active');
+        if (!active) return;
+        const buyBtn = active.querySelector('.buy-button');
+        if (buyBtn) buyBtn.click();
+    });
+
+    /* ---------- 9. TECLA ESC ---------- */
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && fsPlayer.classList.contains('visible')) {
+            closeFullscreen();
+        }
+    });
+
+});
