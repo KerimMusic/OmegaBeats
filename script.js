@@ -32,19 +32,16 @@ function findFirebaseDoc(songTitle) {
     const nTitle = normalizeStr(songTitle);
     if (!nTitle) return null;
 
-    // 1. Match exacto
     for (const doc of firebaseDocsCache) {
         if (normalizeStr(doc.id) === nTitle) return doc;
     }
 
-    // 2. Uno contiene al otro (con longitud mínima para evitar falsos positivos)
     for (const doc of firebaseDocsCache) {
         const nId = normalizeStr(doc.id);
         if (nId.length < 4 || nTitle.length < 4) continue;
         if (nId.includes(nTitle) || nTitle.includes(nId)) return doc;
     }
 
-    // 3. Prefijo de 8 caracteres
     const prefix = nTitle.substring(0, Math.min(nTitle.length, 8));
     if (prefix.length >= 6) {
         for (const doc of firebaseDocsCache) {
@@ -113,6 +110,76 @@ async function cambiarReproducciones(item, delta) {
     } catch (e) {
         console.warn('No se pudo actualizar reproducciones:', e);
     }
+}
+
+/* ============================================================
+   🔥 SISTEMA DE LIKES UNIFICADO
+   ============================================================ */
+const LIKES_KEY    = 'omega_likes_v1';
+const LIKE_LOCK_MS = 30 * 24 * 60 * 60 * 1000;
+
+function _readLikes() {
+    try { return JSON.parse(localStorage.getItem(LIKES_KEY) || '{}'); }
+    catch (_) { return {}; }
+}
+function _writeLikes(map) {
+    try { localStorage.setItem(LIKES_KEY, JSON.stringify(map)); } catch (_) {}
+}
+
+function getLikeDataByKey(key) {
+    if (!key) return null;
+    const likes = _readLikes();
+    const val = likes[key];
+    if (val === undefined || val === null || val === false) return null;
+    if (val === true) return { liked: true, ts: 0, locked: false };
+    if (typeof val === 'object') return val;
+    return null;
+}
+
+function isLikeLockedByKey(key) {
+    const data = getLikeDataByKey(key);
+    if (!data || !data.locked) return false;
+    const elapsed = Date.now() - (data.ts || 0);
+    return elapsed < LIKE_LOCK_MS;
+}
+
+function setLikeDataByKey(key, data) {
+    if (!key) return;
+    const likes = _readLikes();
+    likes[key] = data;
+    _writeLikes(likes);
+}
+
+function removeLikeDataByKey(key) {
+    if (!key) return;
+    const likes = _readLikes();
+    delete likes[key];
+    _writeLikes(likes);
+}
+
+/* 🔥 FUNCIÓN ÚNICA: registra una reproducción completada
+   - Si ya estaba likeada → solo refresca timestamp (NO suma)
+   - Si es la primera vez → marca likeada y suma +1 en Firebase
+*/
+async function registrarReproduccionCompletada(item) {
+    if (!item) return;
+
+    const title = item.querySelector('.item-title')?.textContent.trim() || '';
+    if (!title) return;
+
+    const key = normalizeStr(title);
+    if (!key) return;
+
+    const data = getLikeDataByKey(key);
+    const alreadyLiked = !!(data && data.liked !== false);
+
+    if (alreadyLiked) {
+        setLikeDataByKey(key, { liked: true, ts: Date.now(), locked: true });
+        return;
+    }
+
+    setLikeDataByKey(key, { liked: true, ts: Date.now(), locked: true });
+    await cambiarReproducciones(item, 1);
 }
 
 /* ============================================================
@@ -270,15 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return all;
     }
 
-    function shufflePlaylist() {
-        const items = getAllItems();
-        for (let i = items.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [items[i], items[j]] = [items[j], items[i]];
-        }
-        items.forEach(item => playlist.appendChild(item));
-    }
-
     function loadItem(item, autoplay = true) {
         if (!item) return;
 
@@ -426,38 +484,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    audioPlayer.addEventListener('ended', async () => {
-        const duration = audioPlayer.duration;
-        const played   = audioPlayer.currentTime;
-
-        // FIX: si duration es NaN/0, asumir que se completó
-        const completed = (!duration || !isFinite(duration) || duration <= 0)
-            ? true
-            : played >= (duration - 1.5);
-
+    /* El evento 'ended' principal lo gestiona la sección 6.
+       Aquí solo actualizamos la UI. */
+    audioPlayer.addEventListener('ended', () => {
         updateIcon(false);
         updateProgress(0);
         currentTimeEl.textContent = '0:00';
-
-        if (completed && currentItem) {
-            const key = getItemKey(currentItem);
-            if (key) {
-                const data = getLikeData(key);
-                const alreadyLiked = !!(data && data.liked !== false);
-
-                // FIX: solo sumar si NO estaba ya marcada como escuchada
-                if (!alreadyLiked) {
-                    setLikeData(key, { liked: true, ts: Date.now(), locked: true });
-                    updateLikeUI();
-                    await cambiarReproducciones(currentItem, 1);
-                } else {
-                    // Refrescar timestamp sin volver a sumar
-                    setLikeData(key, { liked: true, ts: Date.now(), locked: true });
-                }
-            }
-        }
-
-        playRandomItem();
     });
 
     progressBar.addEventListener('click', (e) => {
@@ -638,56 +670,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const fsCover     = document.getElementById('fs-cover');
     const fsTitle     = document.getElementById('fs-title');
     const fsClose     = document.getElementById('fs-close');
-
-    const fsLikeBtn    = document.getElementById('fs-like');
-
-    const LIKES_KEY    = 'omega_likes_v1';
-    const LIKE_LOCK_MS = 30 * 24 * 60 * 60 * 1000;
-
-    function _readMap(key) {
-        try { return JSON.parse(localStorage.getItem(key) || '{}'); }
-        catch (_) { return {}; }
-    }
-    function _writeMap(key, map) {
-        try { localStorage.setItem(key, JSON.stringify(map)); } catch (_) {}
-    }
+    const fsLikeBtn   = document.getElementById('fs-like');
 
     function getItemKey(item) {
         if (!item) return '';
         return normalizeStr(item.querySelector('.item-title')?.textContent.trim() || '');
     }
 
-    function getLikeData(key) {
-        if (!key) return null;
-        const likes = _readMap(LIKES_KEY);
-        const val = likes[key];
-        if (val === undefined || val === null || val === false) return null;
-        if (val === true) {
-            return { liked: true, ts: 0, locked: false };
+    function updateLikeUI() {
+        if (!fsLikeBtn) return;
+        const key = getItemKey(currentItem);
+        if (!key) {
+            fsLikeBtn.classList.remove('active');
+            return;
         }
-        if (typeof val === 'object') return val;
-        return null;
-    }
-
-    function isLikeLocked(key) {
-        const data = getLikeData(key);
-        if (!data || !data.locked) return false;
-        const elapsed = Date.now() - (data.ts || 0);
-        return elapsed < LIKE_LOCK_MS;
-    }
-
-    function setLikeData(key, data) {
-        if (!key) return;
-        const likes = _readMap(LIKES_KEY);
-        likes[key] = data;
-        _writeMap(LIKES_KEY, likes);
-    }
-
-    function removeLikeData(key) {
-        if (!key) return;
-        const likes = _readMap(LIKES_KEY);
-        delete likes[key];
-        _writeMap(LIKES_KEY, likes);
+        const data = getLikeDataByKey(key);
+        const isLiked = !!(data && data.liked !== false);
+        fsLikeBtn.classList.toggle('active', isLiked);
     }
 
     function showNotification(message) {
@@ -709,24 +708,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 4500);
     }
 
-    function updateLikeUI() {
-        if (!fsLikeBtn) return;
-        const key = getItemKey(currentItem);
-        if (!key) {
-            fsLikeBtn.classList.remove('active');
-            return;
-        }
-        const data = getLikeData(key);
-        const isLiked = !!(data && data.liked !== false);
-        fsLikeBtn.classList.toggle('active', isLiked);
-    }
-
     fsLikeBtn.addEventListener('click', async () => {
         if (!currentItem) return;
         const key = getItemKey(currentItem);
         if (!key) return;
 
-        if (isLikeLocked(key)) {
+        if (isLikeLockedByKey(key)) {
             showNotification(
                 'No puedes manipular el botón de Me gusta durante 30 días. ' +
                 'Ya te convertiste en un oyente de esta canción. ¡Disfrútala!'
@@ -734,14 +721,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const data = getLikeData(key);
+        const data = getLikeDataByKey(key);
 
         if (data && data.liked !== false) {
-            removeLikeData(key);
+            removeLikeDataByKey(key);
             updateLikeUI();
             await cambiarReproducciones(currentItem, -1);
         } else {
-            setLikeData(key, { liked: true, ts: Date.now(), locked: true });
+            setLikeDataByKey(key, { liked: true, ts: Date.now(), locked: true });
             updateLikeUI();
             await cambiarReproducciones(currentItem, 1);
         }
@@ -764,7 +751,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         fsTitle.textContent = newTitle;
-
         updateLikeUI();
     }
 
@@ -834,8 +820,6 @@ document.addEventListener('DOMContentLoaded', () => {
     attachGesture(player, ({ dx, dy, dt, target }) => {
         const absX = Math.abs(dx), absY = Math.abs(dy);
         const onProgress = target && target.closest && target.closest('#progress-bar');
-
-        // FIX: no abrir fullscreen si el tap fue sobre un botón o la barra de progreso
         const onButton = target && target.closest &&
                          target.closest('button, #progress-bar, #play-button');
 
@@ -865,16 +849,6 @@ document.addEventListener('DOMContentLoaded', () => {
             else        goPrevItem();
         }
     });
-
-    function getItems() {
-        return Array.from(playlist.querySelectorAll('.playlist-item'));
-    }
-
-    function getActiveIndex() {
-        const items  = getItems();
-        const active = playlist.querySelector('.playlist-item.active');
-        return items.indexOf(active);
-    }
 
     function animateSlide(direction) {
         fsContent.style.transition = 'none';
@@ -1408,14 +1382,13 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 /* ============================================================
-   6. REPETIR + ALEATORIO (PANTALLA COMPLETA)
+   6. REPETIR + ALEATORIO + REGISTRO ÚNICO DE REPRODUCCIONES
    ============================================================ */
 (function () {
     'use strict';
 
     const REPEAT_KEY  = 'omega_repeat_mode_v1';
     const SHUFFLE_KEY = 'omega_shuffle_v1';
-    const LIKES_KEY   = 'omega_likes_v1';
 
     let repeatMode = 'off';
     let shuffleOn  = true;
@@ -1520,39 +1493,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return all;
     }
 
-    function registrarReproduccionCompletada(item) {
-        if (!item || typeof normalizeStr !== 'function') return;
-
-        const title = item.querySelector('.item-title')?.textContent.trim() || '';
-        if (!title) return;
-
-        const key = normalizeStr(title);
-        if (!key) return;
-
-        let map = {};
-        try { map = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}'); }
-        catch (_) { map = {}; }
-
-        let data = map[key];
-        if (data === true) data = { liked: true, ts: 0, locked: false };
-
-        const alreadyLiked = !!(data && typeof data === 'object' && data.liked !== false);
-
-        // FIX: si ya estaba marcada, NO sumar reproducción otra vez
-        if (alreadyLiked) {
-            map[key] = { liked: true, ts: Date.now(), locked: true };
-            try { localStorage.setItem(LIKES_KEY, JSON.stringify(map)); } catch (_) {}
-            return;
-        }
-
-        map[key] = { liked: true, ts: Date.now(), locked: true };
-        try { localStorage.setItem(LIKES_KEY, JSON.stringify(map)); } catch (_) {}
-
-        if (typeof cambiarReproducciones === 'function') {
-            cambiarReproducciones(item, 1);
-        }
-    }
-
     function detenerAlFinal(audio) {
         try { audio.pause(); } catch (_) {}
         try { audio.currentTime = 0; } catch (_) {}
@@ -1569,14 +1509,17 @@ document.addEventListener('DOMContentLoaded', () => {
         try { audio.dispatchEvent(new Event('pause')); } catch (_) {}
     }
 
+    /* Listener global de 'ended' (capture) — registro único */
     function onEndedCapture(e) {
         const audio = document.getElementById('audio-player');
         if (!audio || e.target !== audio) return;
 
+        const playlist = document.getElementById('playlist');
+        const activeItem = playlist ? playlist.querySelector('.playlist-item.active') : null;
+
         if (repeatMode === 'one') {
             e.stopPropagation();
 
-            const activeItem = document.querySelector('.playlist-item.active');
             if (activeItem) registrarReproduccionCompletada(activeItem);
 
             try { audio.currentTime = 0; } catch (_) {}
@@ -1585,20 +1528,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (shuffleOn) return;
+        if (shuffleOn) {
+            if (activeItem) registrarReproduccionCompletada(activeItem);
+            return;
+        }
 
         e.stopPropagation();
 
-        const playlist = document.getElementById('playlist');
         if (!playlist) return;
 
-        const list   = getSequentialList();
+        const list = getSequentialList();
         if (!list.length) return;
 
-        const active = playlist.querySelector('.playlist-item.active');
-        const idx    = list.indexOf(active);
+        const idx = list.indexOf(activeItem);
 
-        registrarReproduccionCompletada(active);
+        if (activeItem) registrarReproduccionCompletada(activeItem);
 
         let nextItem = null;
 
@@ -2223,17 +2167,6 @@ document.addEventListener('DOMContentLoaded', () => {
 (function () {
     'use strict';
 
-    const LIKES_KEY    = 'omega_likes_v1';
-    const LIKE_LOCK_MS = 30 * 24 * 60 * 60 * 1000;
-
-    function _read() {
-        try { return JSON.parse(localStorage.getItem(LIKES_KEY) || '{}'); }
-        catch (_) { return {}; }
-    }
-    function _write(map) {
-        try { localStorage.setItem(LIKES_KEY, JSON.stringify(map)); } catch (_) {}
-    }
-
     function _norm(str) {
         if (typeof normalizeStr === 'function') return normalizeStr(str);
         return String(str || '')
@@ -2254,7 +2187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function limpiarMeGustasExpirados() {
-        const map     = _read();
+        const map     = _readLikes();
         const ahora   = Date.now();
         const claves  = Object.keys(map);
         if (!claves.length) return;
@@ -2286,7 +2219,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        _write(map);
+        _writeLikes(map);
 
         try {
             const fsLikeBtn  = document.getElementById('fs-like');
@@ -2323,7 +2256,6 @@ document.addEventListener('DOMContentLoaded', () => {
     'use strict';
 
     const COLLAB_SPLIT = /\s+(?:ft\.?|feat\.?|featuring|con|&)\s+/i;
-    const LIKES_KEY    = 'omega_likes_v1';
 
     let albumItems    = [];
     let albumQueue    = [];
@@ -2522,39 +2454,6 @@ document.addEventListener('DOMContentLoaded', () => {
         playItem(albumQueue[0]);
     }
 
-    function registerCompletedPlay(item) {
-        if (!item || typeof normalizeStr !== 'function') return;
-
-        const title = getItemTitle(item);
-        if (!title) return;
-
-        const key = norm(title);
-        if (!key) return;
-
-        let map = {};
-        try { map = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}'); }
-        catch (_) { map = {}; }
-
-        let data = map[key];
-        if (data === true) data = { liked: true, ts: 0, locked: false };
-
-        const alreadyLiked = !!(data && typeof data === 'object' && data.liked !== false);
-
-        // FIX: si ya estaba marcada, NO sumar reproducción otra vez
-        if (alreadyLiked) {
-            map[key] = { liked: true, ts: Date.now(), locked: true };
-            try { localStorage.setItem(LIKES_KEY, JSON.stringify(map)); } catch (_) {}
-            return;
-        }
-
-        map[key] = { liked: true, ts: Date.now(), locked: true };
-        try { localStorage.setItem(LIKES_KEY, JSON.stringify(map)); } catch (_) {}
-
-        if (typeof cambiarReproducciones === 'function') {
-            cambiarReproducciones(item, 1);
-        }
-    }
-
     function onAlbumEnded(e) {
         const audio = getAudio();
         if (!audio || e.target !== audio) return;
@@ -2572,7 +2471,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
 
         const finished = albumQueue[albumIndex];
-        registerCompletedPlay(finished);
+        registrarReproduccionCompletada(finished);
 
         albumIndex++;
 
@@ -2726,15 +2625,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 /* ============================================================
-   11. 🆕 BOTÓN "MOSTRAR TODAS LAS CANCIONES"
-   ------------------------------------------------------------
-   · Al cargar la app, la lista "Todas las canciones" aparece
-     OCULTA (estado inicial).
-   · Al pulsar el botón, se muestran TODAS las canciones con el
-     diseño existente (mismos items, mismo orden, misma info).
-   · La búsqueda sigue funcionando: si el usuario escribe, se
-     muestran las coincidencias aunque no haya pulsado el botón.
-   · No modifica reproductor, likes, álbumes, perfiles, etc.
+   11. BOTÓN "MOSTRAR TODAS LAS CANCIONES"
    ============================================================ */
 (function () {
     'use strict';
@@ -2759,7 +2650,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn         = document.getElementById('show-all-btn');
         const searchInput = document.getElementById('search-input');
 
-        // FIX: esperar a que existan items reales antes de ocultar
         function hideWhenReady() {
             const pl = document.getElementById('playlist');
             if (!pl) { setTimeout(hideWhenReady, 150); return; }
@@ -2780,9 +2670,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Si el usuario busca sin pulsar el botón, se respetan las
-        // coincidencias. Al borrar la búsqueda, se vuelven a ocultar
-        // (salvo que ya haya pulsado "Mostrar todas las canciones").
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 const q = (e.target.value || '').trim();
@@ -2808,7 +2695,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (typeof window.Kodular === 'undefined' ||
         typeof window.Kodular.setWebViewString !== 'function') {
-        return; // No estamos en Kodular: no hacer nada
+        return;
     }
 
     function boot() {
