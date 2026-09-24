@@ -32,15 +32,21 @@ function findFirebaseDoc(songTitle) {
     const nTitle = normalizeStr(songTitle);
     if (!nTitle) return null;
 
+    // 1. Match exacto
     for (const doc of firebaseDocsCache) {
         if (normalizeStr(doc.id) === nTitle) return doc;
     }
+
+    // 2. Uno contiene al otro (con longitud mínima para evitar falsos positivos)
     for (const doc of firebaseDocsCache) {
         const nId = normalizeStr(doc.id);
+        if (nId.length < 4 || nTitle.length < 4) continue;
         if (nId.includes(nTitle) || nTitle.includes(nId)) return doc;
     }
-    const prefix = nTitle.substring(0, Math.min(nTitle.length, 6));
-    if (prefix.length >= 4) {
+
+    // 3. Prefijo de 8 caracteres
+    const prefix = nTitle.substring(0, Math.min(nTitle.length, 8));
+    if (prefix.length >= 6) {
         for (const doc of firebaseDocsCache) {
             if (normalizeStr(doc.id).startsWith(prefix)) return doc;
         }
@@ -421,9 +427,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     audioPlayer.addEventListener('ended', async () => {
-        const duration  = audioPlayer.duration;
-        const played    = audioPlayer.currentTime;
-        const completed = !!duration && isFinite(duration) && played >= (duration - 1.5);
+        const duration = audioPlayer.duration;
+        const played   = audioPlayer.currentTime;
+
+        // FIX: si duration es NaN/0, asumir que se completó
+        const completed = (!duration || !isFinite(duration) || duration <= 0)
+            ? true
+            : played >= (duration - 1.5);
 
         updateIcon(false);
         updateProgress(0);
@@ -435,12 +445,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = getLikeData(key);
                 const alreadyLiked = !!(data && data.liked !== false);
 
-                if (alreadyLiked) {
-                    setLikeData(key, { liked: true, ts: Date.now(), locked: true });
-                } else {
+                // FIX: solo sumar si NO estaba ya marcada como escuchada
+                if (!alreadyLiked) {
                     setLikeData(key, { liked: true, ts: Date.now(), locked: true });
                     updateLikeUI();
                     await cambiarReproducciones(currentItem, 1);
+                } else {
+                    // Refrescar timestamp sin volver a sumar
+                    setLikeData(key, { liked: true, ts: Date.now(), locked: true });
                 }
             }
         }
@@ -823,7 +835,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const absX = Math.abs(dx), absY = Math.abs(dy);
         const onProgress = target && target.closest && target.closest('#progress-bar');
 
-        if (!onProgress && dt < 400 && absX < 12 && absY < 12) {
+        // FIX: no abrir fullscreen si el tap fue sobre un botón o la barra de progreso
+        const onButton = target && target.closest &&
+                         target.closest('button, #progress-bar, #play-button');
+
+        if (!onProgress && !onButton && dt < 400 && absX < 12 && absY < 12) {
             openFullscreen();
             return;
         }
@@ -1514,13 +1530,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!key) return;
 
         let map = {};
-        try { map = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}'); } catch (_) { map = {}; }
+        try { map = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}'); }
+        catch (_) { map = {}; }
 
         let data = map[key];
         if (data === true) data = { liked: true, ts: 0, locked: false };
 
         const alreadyLiked = !!(data && typeof data === 'object' && data.liked !== false);
 
+        // FIX: si ya estaba marcada, NO sumar reproducción otra vez
         if (alreadyLiked) {
             map[key] = { liked: true, ts: Date.now(), locked: true };
             try { localStorage.setItem(LIKES_KEY, JSON.stringify(map)); } catch (_) {}
@@ -2514,13 +2532,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!key) return;
 
         let map = {};
-        try { map = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}'); } catch (_) { map = {}; }
+        try { map = JSON.parse(localStorage.getItem(LIKES_KEY) || '{}'); }
+        catch (_) { map = {}; }
 
         let data = map[key];
         if (data === true) data = { liked: true, ts: 0, locked: false };
 
         const alreadyLiked = !!(data && typeof data === 'object' && data.liked !== false);
 
+        // FIX: si ya estaba marcada, NO sumar reproducción otra vez
         if (alreadyLiked) {
             map[key] = { liked: true, ts: Date.now(), locked: true };
             try { localStorage.setItem(LIKES_KEY, JSON.stringify(map)); } catch (_) {}
@@ -2739,8 +2759,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn         = document.getElementById('show-all-btn');
         const searchInput = document.getElementById('search-input');
 
-        // Estado inicial: canciones ocultas
-        hideAllSongs();
+        // FIX: esperar a que existan items reales antes de ocultar
+        function hideWhenReady() {
+            const pl = document.getElementById('playlist');
+            if (!pl) { setTimeout(hideWhenReady, 150); return; }
+
+            const items = pl.querySelectorAll(':scope > .playlist-item');
+            if (items.length === 0) { setTimeout(hideWhenReady, 150); return; }
+
+            hideAllSongs();
+        }
+        hideWhenReady();
 
         if (btn) {
             btn.addEventListener('click', () => {
@@ -2771,8 +2800,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 })();
 
-// Cuando tu reproductor HTML haga play
-window.Kodular.setWebViewString("PLAY");
+/* ============================================================
+   12. INTEGRACIÓN KODULAR (OPCIONAL Y SEGURA)
+   ============================================================ */
+(function () {
+    'use strict';
 
-// Cuando tu reproductor HTML haga pause
-window.Kodular.setWebViewString("PAUSE");
+    if (typeof window.Kodular === 'undefined' ||
+        typeof window.Kodular.setWebViewString !== 'function') {
+        return; // No estamos en Kodular: no hacer nada
+    }
+
+    function boot() {
+        var audio = document.getElementById('audio-player');
+        if (!audio) return;
+
+        try { window.Kodular.setWebViewString("PAUSE"); } catch (_) {}
+
+        audio.addEventListener('play', function () {
+            try { window.Kodular.setWebViewString("PLAY"); } catch (_) {}
+        });
+        audio.addEventListener('pause', function () {
+            try { window.Kodular.setWebViewString("PAUSE"); } catch (_) {}
+        });
+        audio.addEventListener('ended', function () {
+            try { window.Kodular.setWebViewString("PAUSE"); } catch (_) {}
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+})();
